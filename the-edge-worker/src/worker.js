@@ -84,8 +84,7 @@ async function handleChat(request, env) {
   if (!res.ok) {
     const detail = await res.text();
     const requestId = res.headers.get('request-id') || res.headers.get('x-request-id') || '';
-    const keyLen = (env.ANTHROPIC_API_KEY || '').length;
-    console.error('Anthropic call failed', res.status, 'req', requestId, 'keylen', keyLen, 'detail', detail);
+    console.error('Anthropic call failed', res.status, 'req', requestId, 'detail', detail);
     return json({ error: 'LLM call failed', status: res.status, requestId, detail }, env, 502);
   }
 
