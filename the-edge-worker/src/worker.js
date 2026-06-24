@@ -39,6 +39,27 @@ export default {
   },
 };
 
+// Anthropic requires the message list to start with a `user` turn and to
+// alternate roles. The client seeds the convo with an assistant opening line
+// and shows back-to-back assistant messages when a step locks, so normalize:
+// drop empties, merge consecutive same-role turns, trim leading assistant turns.
+function buildMessages(history, userMessage) {
+  const raw = [...history, { role: 'user', content: userMessage }];
+  const cleaned = [];
+  for (const m of raw) {
+    if (!m || !m.content) continue;
+    const role = m.role === 'assistant' ? 'assistant' : 'user';
+    const last = cleaned[cleaned.length - 1];
+    if (last && last.role === role) {
+      last.content += '\n\n' + m.content;
+    } else {
+      cleaned.push({ role, content: m.content });
+    }
+  }
+  while (cleaned.length && cleaned[0].role !== 'user') cleaned.shift();
+  return cleaned;
+}
+
 async function handleChat(request, env) {
   const { userMessage, currentStepId, pushbackCount = 0, history = [] } = await request.json();
   if (!userMessage || !currentStepId) return json({ error: 'Missing userMessage or currentStepId' }, env, 400);
@@ -48,7 +69,7 @@ async function handleChat(request, env) {
     { type: 'text', text: buildStepSystem(currentStepId, pushbackCount) },
   ];
 
-  const messages = [...history.slice(-6), { role: 'user', content: userMessage }];
+  const messages = buildMessages(history.slice(-6), userMessage);
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
