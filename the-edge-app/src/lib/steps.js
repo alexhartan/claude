@@ -2,7 +2,7 @@
 
 export const STEPS = [
   { id: '00', title: 'The Product', sidebarLabel: 'the product',
-    openingProbe: 'What is the name of your product or service?' },
+    openingProbe: 'What is the name of your brand?' },
   { id: '01', title: 'The User', sidebarLabel: 'the user',
     openingProbe: 'How would you describe someone using it? Be specific. Role, what kind of company, what they care about.' },
   { id: '02a', title: 'The Obstacle', sidebarLabel: 'obstacle',

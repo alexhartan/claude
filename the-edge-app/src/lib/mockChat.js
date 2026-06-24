@@ -107,5 +107,5 @@ export async function mockChat({ userMessage, currentStepId, pushbackCount }) {
 }
 
 export function getOpeningMessage() {
-  return 'What is the name of your product or service?';
+  return 'What is the name of your brand?';
 }

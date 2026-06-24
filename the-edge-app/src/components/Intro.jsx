@@ -3,11 +3,11 @@ export default function Intro({ onStart }) {
     <div className="intro">
       <div className="intro-inner">
         <p className="intro-body">
-          This is The Edge, a free digital tool by{' '}
+          This is The Edge, a free strategy tool by Alex Hartan of{' '}
           <a href="https://www.galvanite.io?utm_source=edge" target="_blank" rel="noopener noreferrer" className="intro-link">
             Galvanite
           </a>
-          , helping you discover the components of your product's story and what makes it unique and relevant for your customers.
+          , designed to help you identify your product's unique edge and craft a compelling brand story around it.
         </p>
         <p className="intro-prompt">Ready?</p>
         <button className="intro-start" onClick={onStart}>Let's go</button>

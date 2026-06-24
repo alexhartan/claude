@@ -145,6 +145,8 @@ export default function App() {
   const isComplete = stage === STAGE.COMPLETE;
   const isIntro = stage === STAGE.INTRO;
   const currentStepNum = Math.min(lockedCount + 1, TOTAL_STEPS);
+  // Sidebar stays collapsed until the founder has locked at least one answer.
+  const showSidebar = !isIntro && lockedCount > 0;
 
   return (
     <div className="app">
@@ -163,8 +165,8 @@ export default function App() {
         )}
       </header>
 
-      <main className={isIntro ? 'app-main app-main--no-sidebar' : 'app-main'}>
-        {!isIntro && (
+      <main className={showSidebar ? 'app-main' : 'app-main app-main--no-sidebar'}>
+        {showSidebar && (
           <SignalSummary lockedAnswers={lockedAnswers} onSaveProgress={handleSaveProgress} isComplete={isComplete} />
         )}
 

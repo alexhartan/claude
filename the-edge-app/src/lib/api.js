@@ -49,5 +49,5 @@ export async function fetchSession(sessionId) {
 }
 
 export function getOpeningMessage() {
-  return 'What is the name of your product or service?';
+  return 'What is the name of your brand?';
 }
