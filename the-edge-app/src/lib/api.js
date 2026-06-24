@@ -42,6 +42,12 @@ export async function completeAndEmail({ email, answers, oneLiner }) {
   return res.json();
 }
 
+export async function fetchSession(sessionId) {
+  const res = await fetch(`${API_BASE}/api/session?id=${encodeURIComponent(sessionId)}`);
+  if (!res.ok) throw new Error(`Session fetch failed: ${res.status}`);
+  return res.json(); // { email, state, savedAt }
+}
+
 export function getOpeningMessage() {
   return 'What is the name of your product or service?';
 }

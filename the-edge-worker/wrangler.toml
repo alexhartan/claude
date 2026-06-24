@@ -8,6 +8,8 @@ compatibility_date = "2026-01-01"
 ALLOWED_ORIGIN = "*"
 FROM_EMAIL = "The Edge <edge@galvanite.io>"
 APP_URL = "http://localhost:5173"
+# Where completed-lead notifications are sent. Set to your inbox.
+NOTIFY_EMAIL = "alex@galvanite.io"
 
 # KV namespace for saved sessions + completed leads.
 # Create with: wrangler kv namespace create SESSIONS

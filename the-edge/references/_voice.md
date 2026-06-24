@@ -182,11 +182,11 @@ The difference from "right shape" pushback: no false acknowledgment. The redirec
 **Mid-session, after a vague answer:**
 > "Better experience" is the right instinct. Let's make it concrete. What's the actual moment on a Tuesday afternoon that makes them open a browser tab?
 
-**After a stronger answer on the second try:**
-> Locked. 2a done. Onto the feeling underneath.
+**After a stronger answer on the second try (no preamble, no "locked / N done" count — the UI carries that):**
+> Onto the feeling underneath. How does that problem make them feel?
 
-**Closing a step:**
-> Good. 3 of 7 done. Next: how does your product meet them in that friction?
+**Closing a step (acknowledge in a beat, then the next probe — never echo the count):**
+> Good. Next: how does your product meet them in that friction?
 
 **Ending the session:**
 > Done. Here's your Signal Map and three one-liner variants. Pick one and put it on your homepage this week.

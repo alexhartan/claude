@@ -1,14 +1,14 @@
 // The Edge — Cloudflare Worker
 
 import { SYSTEM_BASE, buildStepSystem } from './systemPrompt.js';
-import { renderSignalMapEmail, renderSaveProgressEmail } from './email.js';
+import { renderSignalMapEmail, renderSaveProgressEmail, renderLeadNotificationEmail } from './email.js';
 
 const MODEL = 'claude-sonnet-4-6';
 
 function corsHeaders(env) {
   return {
     'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN || '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
   };
@@ -31,6 +31,7 @@ export default {
       if (url.pathname === '/api/chat' && request.method === 'POST') return await handleChat(request, env);
       if (url.pathname === '/api/save' && request.method === 'POST') return await handleSave(request, env);
       if (url.pathname === '/api/complete' && request.method === 'POST') return await handleComplete(request, env);
+      if (url.pathname === '/api/session' && request.method === 'GET') return await handleSession(url, env);
       return json({ error: 'Not found' }, env, 404);
     } catch (err) {
       return json({ error: 'Server error', detail: String(err) }, env, 500);
@@ -113,6 +114,18 @@ async function handleSave(request, env) {
   return json({ ok: true, sessionId }, env);
 }
 
+async function handleSession(url, env) {
+  const sessionId = url.searchParams.get('id');
+  if (!sessionId) return json({ error: 'Missing id' }, env, 400);
+  if (!env.SESSIONS) return json({ error: 'Storage unavailable' }, env, 503);
+
+  const raw = await env.SESSIONS.get(`session:${sessionId}`);
+  if (!raw) return json({ error: 'Session not found or expired' }, env, 404);
+
+  const record = JSON.parse(raw);
+  return json({ email: record.email, state: record.state, savedAt: record.savedAt }, env);
+}
+
 async function handleComplete(request, env) {
   const { email, answers, oneLiner } = await request.json();
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -131,6 +144,20 @@ async function handleComplete(request, env) {
     await env.SESSIONS.put(`lead:${Date.now()}:${email}`,
       JSON.stringify({ email, product, oneLiner, answers, completedAt: Date.now() }),
       { expirationTtl: 60 * 60 * 24 * 365 });
+  }
+
+  // Notify the team that a new lead completed the exercise. Best-effort:
+  // a failed notification must not break the founder's Signal Map delivery.
+  if (env.NOTIFY_EMAIL) {
+    try {
+      await sendEmail(env, {
+        to: env.NOTIFY_EMAIL,
+        subject: `New Edge lead: ${product} (${email})`,
+        html: renderLeadNotificationEmail({ product, email, oneLiner, answers }),
+      });
+    } catch (err) {
+      console.error('Lead notification failed:', String(err));
+    }
   }
 
   return json({ ok: true }, env);

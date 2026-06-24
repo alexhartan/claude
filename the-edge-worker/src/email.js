@@ -49,6 +49,31 @@ export function renderSignalMapEmail({ product, oneLiner, answers }) {
     </td></tr></table></body></html>`;
 }
 
+export function renderLeadNotificationEmail({ product, email, oneLiner, answers }) {
+  const rows = MAP_ROWS.filter(([, key]) => answers[key]).map(([label, key]) => `
+    <tr>
+      <td style="padding:6px 12px 6px 0;font-family:Arial,sans-serif;font-size:12px;color:#888;white-space:nowrap;vertical-align:top;">${esc(label)}</td>
+      <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:14px;color:#111;line-height:1.5;">${esc(answers[key])}</td>
+    </tr>`).join('');
+
+  return `<!DOCTYPE html><html><body style="margin:0;padding:24px;background:#f4f4f4;font-family:Arial,sans-serif;">
+    <table width="640" cellpadding="0" cellspacing="0" style="max-width:640px;margin:0 auto;background:#fff;border-radius:8px;">
+      <tr><td style="padding:28px 32px;">
+        <div style="font-size:12px;letter-spacing:2px;color:#999;text-transform:uppercase;">New Edge lead</div>
+        <h1 style="font-size:22px;color:#111;margin:8px 0 4px;">${esc(product)}</h1>
+        <p style="font-size:14px;color:#444;margin:0 0 20px;">
+          From <a href="mailto:${esc(email)}" style="color:#1d4873;">${esc(email)}</a>
+        </p>
+        <div style="background:#f4f7fb;border-radius:6px;padding:16px 20px;margin-bottom:20px;">
+          <div style="font-size:11px;letter-spacing:1px;color:#888;text-transform:uppercase;margin-bottom:6px;">Chosen one-liner</div>
+          <div style="font-size:16px;color:#111;line-height:1.4;">${esc(oneLiner)}</div>
+        </div>
+        <table width="100%" cellpadding="0" cellspacing="0">${rows}</table>
+      </td></tr>
+    </table>
+  </body></html>`;
+}
+
 export function renderSaveProgressEmail({ resumeUrl, lockedCount }) {
   return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:${BRAND.navyDeep};">
     <table width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.navyDeep};padding:40px 0;">

@@ -34,17 +34,40 @@ export default function App() {
   const [stage, setStage] = useState(STAGE.INTRO);
   const [chosenOneLiner, setChosenOneLiner] = useState(null);
 
+  function hydrate(session) {
+    if (!session || !session.messages?.length) return false;
+    setMessages(session.messages);
+    setCurrentStepId(session.currentStepId || '00');
+    setPushbackCount(session.pushbackCount || 0);
+    setLockedAnswers(session.lockedAnswers || {});
+    setEmail(session.email || '');
+    setStage(session.stage || STAGE.CONVERSATION);
+    setChosenOneLiner(session.chosenOneLiner || null);
+    return true;
+  }
+
   useEffect(() => {
-    const session = loadSession();
-    if (session && session.messages?.length) {
-      setMessages(session.messages);
-      setCurrentStepId(session.currentStepId || '00');
-      setPushbackCount(session.pushbackCount || 0);
-      setLockedAnswers(session.lockedAnswers || {});
-      setEmail(session.email || '');
-      setStage(session.stage || STAGE.CONVERSATION);
-      setChosenOneLiner(session.chosenOneLiner || null);
+    const params = new URLSearchParams(window.location.search);
+    const resumeId = params.get('resume');
+
+    // Resume-by-link: a saved-progress email points here with ?resume=<sessionId>.
+    // Fetch the stored state from the Worker (cross-device), then strip the param
+    // so a later refresh uses the now-synced localStorage copy instead.
+    if (resumeId && !USE_MOCK) {
+      realApi.fetchSession(resumeId)
+        .then(({ email: savedEmail, state }) => {
+          hydrate({ ...state, email: savedEmail, stage: STAGE.CONVERSATION });
+        })
+        .catch(() => {
+          hydrate(loadSession()); // fall back to whatever is local
+        })
+        .finally(() => {
+          window.history.replaceState({}, '', window.location.pathname);
+        });
+      return;
     }
+
+    hydrate(loadSession());
   }, []);
 
   useEffect(() => {
