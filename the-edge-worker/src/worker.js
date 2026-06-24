@@ -75,7 +75,7 @@ async function handleChat(request, env) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': env.ANTHROPIC_API_KEY,
+      'x-api-key': (env.ANTHROPIC_API_KEY || '').trim(),
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({ model: MODEL, max_tokens: 600, system, messages }),
@@ -83,8 +83,10 @@ async function handleChat(request, env) {
 
   if (!res.ok) {
     const detail = await res.text();
-    console.error('Anthropic call failed', res.status, detail);
-    return json({ error: 'LLM call failed', status: res.status, detail }, env, 502);
+    const requestId = res.headers.get('request-id') || res.headers.get('x-request-id') || '';
+    const keyLen = (env.ANTHROPIC_API_KEY || '').length;
+    console.error('Anthropic call failed', res.status, 'req', requestId, 'keylen', keyLen, 'detail', detail);
+    return json({ error: 'LLM call failed', status: res.status, requestId, detail }, env, 502);
   }
 
   const data = await res.json();
