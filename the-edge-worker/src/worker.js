@@ -62,7 +62,8 @@ async function handleChat(request, env) {
 
   if (!res.ok) {
     const detail = await res.text();
-    return json({ error: 'LLM call failed', detail }, env, 502);
+    console.error('Anthropic call failed', res.status, detail);
+    return json({ error: 'LLM call failed', status: res.status, detail }, env, 502);
   }
 
   const data = await res.json();
