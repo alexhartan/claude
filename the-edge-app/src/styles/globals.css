@@ -1,0 +1,128 @@
+/* ============================================
+   THE EDGE — Design System (Galvanite-aligned)
+   ============================================ */
+
+@import './components.css';
+
+/* Self-hosted fonts */
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/fonts/DMSans-VariableFont_opsz_wght.ttf') format('truetype-variations');
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nordt Slim';
+  src: url('/fonts/NORDTSLIM-SEMILIGHT.OTF') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --darkest: #151F3B;
+  --blue: #2e5073;
+  --blue-deep: #264b80;
+  --blue-card: #1d4873;
+  --sky: #9acce5;
+  --sky-link: #529fcc;
+  --chalk: #C2E2F2;
+  --white: #ffffff;
+  --yellow: #ffd400;
+  --highlight: #49B4F2;
+
+  --sidebar-bg: rgba(22, 33, 64, 0.75);
+  --border-default: var(--blue);
+  --border-soft: rgba(46, 80, 115, 0.5);
+
+  --text-primary: var(--white);
+  --text-chalk: var(--chalk);
+  --text-meta: var(--highlight);
+  --text-muted: var(--sky-link);
+
+  --font-display: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Sans', system-ui, sans-serif;
+  --font-eyebrow: 'Nordt Slim', 'DM Sans', system-ui, sans-serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  --sidebar-width: 344px;
+  --conversation-max: 900px;
+  --header-height: 80px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: linear-gradient(to bottom, var(--darkest) 20%, #0E3254 75%, #0A3966 90%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+button { font-family: inherit; font-size: inherit; background: none; border: none; color: inherit; cursor: pointer; }
+input, textarea { font-family: inherit; background: none; border: none; color: inherit; outline: none; }
+
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+:focus-visible {
+  outline: 1px solid var(--highlight);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgba(102, 204, 255, 0.3);
+  color: var(--text-primary);
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-soft); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--blue); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+@keyframes typingDot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+@media (max-width: 900px) {
+  :root { --sidebar-width: 100%; }
+}

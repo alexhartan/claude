@@ -1,0 +1,24 @@
+name = "the-edge-worker"
+main = "src/worker.js"
+compatibility_date = "2026-01-01"
+
+[vars]
+# For local dev: "*" allows your localhost frontend to call the Worker.
+# For production: set to "https://edge.galvanite.io" (or your real domain).
+ALLOWED_ORIGIN = "*"
+FROM_EMAIL = "The Edge <edge@galvanite.io>"
+APP_URL = "http://localhost:5173"
+
+# KV namespace for saved sessions + completed leads.
+# Create with: wrangler kv namespace create SESSIONS
+# Then paste the id below.
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+# Set secrets via:
+#   wrangler secret put ANTHROPIC_API_KEY
+#   wrangler secret put RESEND_API_KEY
+# For local dev with `wrangler dev`, put them in .dev.vars (NOT .env.local) instead:
+#   ANTHROPIC_API_KEY=sk-ant-...
+#   RESEND_API_KEY=re_...
