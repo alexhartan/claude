@@ -1,26 +1,24 @@
 name = "the-edge-worker"
 main = "src/worker.js"
 compatibility_date = "2026-01-01"
+account_id = "63095e7d8d20aca0dc1cc137369aa058"
 
 [vars]
-# For local dev: "*" allows your localhost frontend to call the Worker.
-# For production: set to "https://edge.galvanite.io" (or your real domain).
-ALLOWED_ORIGIN = "*"
+# Production origin allowed to call the Worker (CORS).
+ALLOWED_ORIGIN = "https://edge.galvanite.io"
 FROM_EMAIL = "The Edge <edge@galvanite.io>"
-APP_URL = "http://localhost:5173"
-# Where completed-lead notifications are sent. Set to your inbox.
+# Base URL used to build the save-progress resume link.
+APP_URL = "https://edge.galvanite.io"
+# Where completed-lead notifications are sent.
 NOTIFY_EMAIL = "alex@galvanite.io"
 
 # KV namespace for saved sessions + completed leads.
-# Create with: wrangler kv namespace create SESSIONS
-# Then paste the id below.
 [[kv_namespaces]]
 binding = "SESSIONS"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+id = "e46cd1dca61146a4baf32efc203c92b2"
 
-# Set secrets via:
+# Secrets are set once on the deployed Worker and persist across deploys:
 #   wrangler secret put ANTHROPIC_API_KEY
 #   wrangler secret put RESEND_API_KEY
-# For local dev with `wrangler dev`, put them in .dev.vars (NOT .env.local) instead:
-#   ANTHROPIC_API_KEY=sk-ant-...
-#   RESEND_API_KEY=re_...
+# CI deploys (GitHub Actions) do NOT touch secrets.
+# For local `wrangler dev`, put them in .dev.vars (gitignored) instead.

@@ -1,0 +1,24 @@
+name: Deploy Worker
+
+# Auto-deploys the Cloudflare Worker whenever worker code changes on this branch.
+# Requires repo secret CLOUDFLARE_API_TOKEN (Workers edit permission).
+# The frontend deploys separately via Cloudflare Pages' own Git integration.
+
+on:
+  push:
+    branches: [the-edge]
+    paths:
+      - 'the-edge-worker/**'
+      - '.github/workflows/deploy-worker.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          workingDirectory: the-edge-worker
