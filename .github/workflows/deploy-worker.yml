@@ -2,7 +2,7 @@ name: Deploy Worker
 
 # Auto-deploys the Cloudflare Worker whenever worker code changes on this branch.
 # Requires repo secret CLOUDFLARE_API_TOKEN (Workers edit permission).
-# The frontend deploys separately via Cloudflare Pages' own Git integration.
+# The frontend deploys via the companion deploy-frontend.yml workflow.
 
 on:
   push:
