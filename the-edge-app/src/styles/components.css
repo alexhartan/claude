@@ -218,7 +218,7 @@
 .msg--user { justify-content: flex-end; }
 .msg--assistant { justify-content: flex-start; width: 100%; max-width: 824px; }
 
-.msg-bubble { font-family: var(--font-display); }
+.msg-bubble { font-family: var(--font-display); white-space: pre-wrap; }
 
 .msg-bubble--assistant {
   font-size: 28px;
