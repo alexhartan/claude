@@ -1,0 +1,35 @@
+name: Deploy Frontend
+
+# Builds and deploys the Vite frontend to the existing Cloudflare Pages
+# project "the-edge" on push. Uses the same CLOUDFLARE_API_TOKEN secret.
+# NOTE: for edge.galvanite.io to update, the Pages project's *production
+# branch* must equal the branch below (the-edge). Set it in:
+# Cloudflare > Workers & Pages > the-edge > Settings > Builds & deployments.
+
+on:
+  push:
+    branches: [the-edge]
+    paths:
+      - 'the-edge-app/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install & build
+        working-directory: the-edge-app
+        run: |
+          npm ci
+          npm run build
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          workingDirectory: the-edge-app
+          command: pages deploy dist --project-name=the-edge --branch=the-edge
