@@ -19,9 +19,13 @@ function esc(s) {
 
 export function renderSignalMapEmail({ product, oneLiner, answers }) {
   const rows = MAP_ROWS.filter(([, key]) => answers[key]).map(([label, key]) => `
-    <tr><td style="padding:16px 0;border-bottom:1px solid ${BRAND.blue};">
-      <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;color:${BRAND.highlight};text-transform:uppercase;margin-bottom:6px;">${esc(label)}</div>
-      <div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5;color:${BRAND.chalk};">${esc(answers[key])}</div>
+    <tr><td style="padding:0 0 12px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.blueCard};border-radius:8px;">
+        <tr><td style="padding:18px 22px;">
+          <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;color:${BRAND.highlight};text-transform:uppercase;margin-bottom:8px;">${esc(label)}</div>
+          <div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.55;color:${BRAND.chalk};">${esc(answers[key])}</div>
+        </td></tr>
+      </table>
     </td></tr>`).join('');
 
   return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:${BRAND.navyDeep};">
@@ -43,7 +47,7 @@ export function renderSignalMapEmail({ product, oneLiner, answers }) {
         </td></tr>
         <tr><td style="padding:0 40px 24px;"><table width="100%" cellpadding="0" cellspacing="0">${rows}</table></td></tr>
         <tr><td style="padding:8px 40px 40px;">
-          <a href="https://www.galvanite.io?utm_source=edge&utm_medium=email" style="display:inline-block;background:${BRAND.yellow};color:${BRAND.navy};font-family:Arial,sans-serif;font-size:15px;font-weight:bold;text-decoration:none;padding:14px 28px;border-radius:6px;">See what Galvanite can build</a>
+          <a href="https://www.galvanite.io?utm_source=edge&utm_medium=email" style="display:inline-block;background:${BRAND.yellow};color:${BRAND.navy};font-family:Arial,sans-serif;font-size:15px;font-weight:bold;text-decoration:none;padding:14px 28px;border-radius:6px;">See how we can build on this</a>
         </td></tr>
       </table>
     </td></tr></table></body></html>`;
@@ -51,10 +55,10 @@ export function renderSignalMapEmail({ product, oneLiner, answers }) {
 
 export function renderLeadNotificationEmail({ product, email, oneLiner, answers }) {
   const rows = MAP_ROWS.filter(([, key]) => answers[key]).map(([label, key]) => `
-    <tr>
-      <td style="padding:6px 12px 6px 0;font-family:Arial,sans-serif;font-size:12px;color:#888;white-space:nowrap;vertical-align:top;">${esc(label)}</td>
-      <td style="padding:6px 0;font-family:Arial,sans-serif;font-size:14px;color:#111;line-height:1.5;">${esc(answers[key])}</td>
-    </tr>`).join('');
+    <tr><td style="padding:10px 0;border-bottom:1px solid #eee;">
+      <div style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:1px;color:#888;text-transform:uppercase;margin-bottom:4px;">${esc(label)}</div>
+      <div style="font-family:Arial,sans-serif;font-size:14px;color:#111;line-height:1.5;">${esc(answers[key])}</div>
+    </td></tr>`).join('');
 
   return `<!DOCTYPE html><html><body style="margin:0;padding:24px;background:#f4f4f4;font-family:Arial,sans-serif;">
     <table width="640" cellpadding="0" cellspacing="0" style="max-width:640px;margin:0 auto;background:#fff;border-radius:8px;">

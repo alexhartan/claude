@@ -571,7 +571,7 @@
   font-size: 48px;
   font-weight: 300;
   line-height: 1.1;
-  letter-spacing: -0.025em;
+  letter-spacing: normal;
   color: var(--white);
   margin-bottom: var(--space-7);
 }

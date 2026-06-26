@@ -9,12 +9,13 @@ import { loadSession, saveSession, clearSession } from './lib/storage.js';
 
 // Toggle: VITE_USE_MOCK=true for offline heuristics, false for real Worker
 import * as realApi from './lib/api.js';
-import { mockChat, getOpeningMessage as mockOpening } from './lib/mockChat.js';
+import { mockChat, getOpeningMessage as mockOpening, getOneLiners as mockOneLiners } from './lib/mockChat.js';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 const sendToBackend = USE_MOCK ? mockChat : realApi.chat;
 const getOpeningMessage = USE_MOCK ? mockOpening : realApi.getOpeningMessage;
+const fetchOneLiners = USE_MOCK ? mockOneLiners : realApi.getOneLiners;
 
 const STAGE = {
   INTRO: 'intro',
@@ -182,7 +183,7 @@ export default function App() {
           <div className="conversation-pane">
             <div className="conversation-scroll">
               <div className="conversation-inner">
-                <OneLinerSelect lockedAnswers={lockedAnswers} onConfirm={handleOneLinerConfirm} />
+                <OneLinerSelect lockedAnswers={lockedAnswers} onConfirm={handleOneLinerConfirm} fetchOneLiners={fetchOneLiners} />
               </div>
             </div>
           </div>
@@ -199,8 +200,8 @@ export default function App() {
                     <div className="complete-oneliner-label">The One-Liner</div>
                     <p className="complete-oneliner-text">{chosenOneLiner}</p>
                   </div>
-                  <p className="complete-body">The formatted file is waiting. Send it to your inbox to keep.</p>
-                  <button className="oneliner-confirm" onClick={() => setSaveModalOpen(true)}>Send my Signal Map</button>
+                  <p className="complete-body">Your Signal Map is ready. Enter your email address and we'll send it to you for free.</p>
+                  <button className="oneliner-confirm" onClick={() => setSaveModalOpen(true)}>Send it to my inbox</button>
                 </div>
               </div>
             </div>

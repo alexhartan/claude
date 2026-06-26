@@ -5,13 +5,18 @@ export default function SaveProgressModal({ open, onClose, onSubmit, initialEmai
   const [submitted, setSubmitted] = useState(false);
   const inputRef = useRef(null);
 
+  // Reset form state only when the modal opens. Submitting calls onSubmit, which
+  // updates the parent's email and thus initialEmail — if that were a dependency
+  // here, the effect would re-run and bounce the user back to the form, forcing a
+  // second submit. Keying the reset to `open` alone avoids that.
   useEffect(() => {
     if (open) {
       setEmail(initialEmail);
       setSubmitted(false);
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [open, initialEmail]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   if (!open) return null;
 
@@ -65,8 +70,8 @@ export default function SaveProgressModal({ open, onClose, onSubmit, initialEmai
             <h2 className="modal-title">{isComplete ? 'Signal Map sent' : 'Saved'}</h2>
             <p className="modal-body">
               {isComplete
-                ? `Check ${email}. Your Signal Map is on its way.`
-                : `We've saved your progress and emailed ${email} a link to pick up later.`}
+                ? `Check your inbox at ${email}. Your Signal Map is on its way.`
+                : `Check your inbox at ${email} for a link to pick up where you left off.`}
             </p>
             <button className="modal-submit" onClick={onClose}>{isComplete ? 'Done' : 'Keep going'}</button>
           </>

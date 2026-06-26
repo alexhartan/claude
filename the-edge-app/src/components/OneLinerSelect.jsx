@@ -1,30 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-function generateOneLiners(answers) {
-  const product = answers['00'] || '[product]';
-  const user = answers['01'] || '[user]';
-  const obstacle = answers['02a'] || '[obstacle]';
-  const belief = answers['02c'] || '[belief]';
-  const transformation = answers['07'] || '[transformation]';
-  const cost = answers['06'] || '[cost]';
-
-  const shortCost = cost.split(/[.,;]/)[0].trim();
-  const shortObstacle = obstacle.split(/[.,;]/)[0].trim();
-  const shortTransformation = transformation.split(/[.,;]/)[0].trim();
-
-  return [
-    { label: 'Outcome-led', use: 'Best for homepage hero',
-      text: `${product} helps ${user.toLowerCase()} ${shortTransformation.toLowerCase()}. Without ${shortCost.toLowerCase()}.` },
-    { label: 'Obstacle-led', use: 'Best for sales decks and outbound',
-      text: `${user} struggle with ${shortObstacle.toLowerCase()}. ${product} helps them ${shortTransformation.toLowerCase()}.` },
-    { label: 'Belief-led', use: 'Best for thought leadership and founder posts',
-      text: `${belief} ${product} helps ${user.toLowerCase()} ${shortTransformation.toLowerCase()}.` },
-  ];
-}
-
-export default function OneLinerSelect({ lockedAnswers, onConfirm }) {
-  const variants = generateOneLiners(lockedAnswers);
+export default function OneLinerSelect({ lockedAnswers, onConfirm, fetchOneLiners }) {
+  const [variants, setVariants] = useState(null);
   const [selected, setSelected] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    fetchOneLiners(lockedAnswers).then((result) => {
+      if (active) setVariants(result);
+    });
+    return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!variants) {
+    return (
+      <div className="oneliner-select">
+        <div className="oneliner-select-header">
+          <div className="oneliner-eyebrow">10 of 10 done</div>
+          <h2 className="oneliner-title">Polishing your one-liners…</h2>
+          <p className="oneliner-subtitle">Turning your answers into three sharp drafts.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="oneliner-select">

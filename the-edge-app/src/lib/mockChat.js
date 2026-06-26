@@ -1,5 +1,6 @@
 // Mocked LLM responses for offline prototype testing
 import { getNextStepId } from './steps.js';
+import { localOneLiners } from './oneliners.js';
 
 function analyzeAnswer(answer, stepId, pushbackCount) {
   const text = answer.trim().toLowerCase();
@@ -108,4 +109,9 @@ export async function mockChat({ userMessage, currentStepId, pushbackCount }) {
 
 export function getOpeningMessage() {
   return 'What is the name of your brand?';
+}
+
+export async function getOneLiners(answers) {
+  await new Promise((r) => setTimeout(r, 400));
+  return localOneLiners(answers);
 }

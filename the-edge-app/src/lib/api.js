@@ -1,6 +1,7 @@
 // Real backend client. Mirrors mockChat contract.
 
 import { getNextStepId } from './steps.js';
+import { localOneLiners } from './oneliners.js';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8787';
 
@@ -40,6 +41,28 @@ export async function completeAndEmail({ email, answers, oneLiner }) {
   });
   if (!res.ok) throw new Error(`Complete failed: ${res.status}`);
   return res.json();
+}
+
+// Ask the Worker to write three polished one-liners from the captured answers.
+// Falls back to the local heuristic if the call fails or returns nothing usable.
+export async function getOneLiners(answers) {
+  try {
+    const res = await fetch(`${API_BASE}/api/oneliners`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers }),
+    });
+    if (!res.ok) throw new Error(`One-liners failed: ${res.status}`);
+    const data = await res.json();
+    const variants = data.variants;
+    if (Array.isArray(variants) && variants.length && variants.every((v) => v.text)) {
+      return variants;
+    }
+    throw new Error('Empty one-liners');
+  } catch (e) {
+    console.error('One-liner polish failed, using local fallback:', e);
+    return localOneLiners(answers);
+  }
 }
 
 export async function fetchSession(sessionId) {

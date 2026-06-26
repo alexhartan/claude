@@ -29,6 +29,7 @@ export default {
     const url = new URL(request.url);
     try {
       if (url.pathname === '/api/chat' && request.method === 'POST') return await handleChat(request, env);
+      if (url.pathname === '/api/oneliners' && request.method === 'POST') return await handleOneLiners(request, env);
       if (url.pathname === '/api/save' && request.method === 'POST') return await handleSave(request, env);
       if (url.pathname === '/api/complete' && request.method === 'POST') return await handleComplete(request, env);
       if (url.pathname === '/api/session' && request.method === 'GET') return await handleSession(url, env);
@@ -109,6 +110,100 @@ async function handleChat(request, env) {
     captured_answer: parsed.captured_answer ?? null,
     pushback_count: parsed.step_status === 'locked' ? pushbackCount : pushbackCount + 1,
   }, env);
+}
+
+// Fixed presentation order for the three one-liner drafts. Labels and use-cases
+// are owned here (not by the model) so the UI stays consistent; the model only
+// writes the polished `text` for each style.
+const ONELINER_STYLES = [
+  { label: 'Outcome-led', use: 'Best for homepage hero',
+    brief: 'Lead with the concrete outcome/transformation the user gets. Benefit-first, confident, no jargon.' },
+  { label: 'Obstacle-led', use: 'Best for sales decks and outbound',
+    brief: 'Open with the user and the struggle they feel, then how the product resolves it.' },
+  { label: 'Belief-led', use: 'Best for thought leadership and founder posts',
+    brief: 'Open with the underlying belief / just cause, then tie the product to it.' },
+];
+
+async function handleOneLiners(request, env) {
+  const { answers = {} } = await request.json();
+  const product = answers['00'] || 'the product';
+
+  const brief = [
+    ['Brand / product', answers['00']],
+    ['User', answers['01']],
+    ['Obstacle (surface problem)', answers['02a']],
+    ['Struggle (how it feels)', answers['02b']],
+    ['Just cause / belief', answers['02c']],
+    ['Solution', answers['03']],
+    ['Process', answers['04']],
+    ['Next step', answers['05']],
+    ['Cost of inaction', answers['06']],
+    ['Transformation', answers['07']],
+  ].filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join('\n');
+
+  const styleSpec = ONELINER_STYLES
+    .map((s, i) => `${i + 1}. ${s.label} (${s.use}) — ${s.brief}`)
+    .join('\n');
+
+  const system = `You are a sharp brand strategist who writes positioning one-liners.
+You will receive a founder's "Signal Map" — their answers about their product, user, and story.
+Write three one-liners for ${product}, one in each style below, in this exact order:
+${styleSpec}
+
+Rules:
+- Polish for clarity and brevity. Do NOT just stitch the answers together verbatim — rewrite them into clean, natural marketing copy.
+- Each one-liner is one or two short sentences, ~25 words max.
+- Be concrete and grounded ONLY in the Signal Map. Do not invent facts or features.
+- No placeholder brackets, no labels, no quotation marks around the lines.
+- Plain, human language. Avoid hype words like "revolutionary", "seamless", "game-changing".
+
+Respond with ONLY a JSON array of exactly three strings, in the order above. Example: ["...", "...", "..."]`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': (env.ANTHROPIC_API_KEY || '').trim(),
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 500,
+      system,
+      messages: [{ role: 'user', content: `Signal Map:\n\n${brief}` }],
+    }),
+  });
+
+  if (!res.ok) {
+    const detail = await res.text();
+    console.error('One-liner call failed', res.status, detail);
+    return json({ error: 'LLM call failed', status: res.status }, env, 502);
+  }
+
+  const data = await res.json();
+  const raw = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('').trim();
+
+  let texts;
+  try {
+    const clean = raw.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+    texts = JSON.parse(clean);
+  } catch (e) {
+    // Salvage a bare array if the model wrapped it in prose.
+    const m = raw.match(/\[[\s\S]*\]/);
+    texts = m ? JSON.parse(m[0]) : null;
+  }
+
+  if (!Array.isArray(texts) || texts.length < ONELINER_STYLES.length) {
+    return json({ error: 'Could not parse one-liners' }, env, 502);
+  }
+
+  const variants = ONELINER_STYLES.map((s, i) => ({
+    label: s.label,
+    use: s.use,
+    text: String(texts[i] || '').trim(),
+  }));
+
+  return json({ variants }, env);
 }
 
 async function handleSave(request, env) {
