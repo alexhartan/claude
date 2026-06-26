@@ -15,7 +15,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--space-7);
+  padding: 0 var(--space-6);
   height: var(--header-height);
   background: var(--darkest);
   border-bottom: 1px solid var(--blue);
@@ -74,12 +74,13 @@
   backdrop-filter: blur(20px);
   border-right: 1px solid var(--blue);
   overflow: hidden;
+  animation: slideInLeft 0.5s ease both;
 }
 
 .signal-summary-body {
   flex: 1;
   overflow-y: auto;
-  padding: 0 30px;
+  padding: 0 var(--space-6);
 }
 
 .signal-summary-list {
@@ -119,6 +120,7 @@
   font-family: var(--font-eyebrow);
   font-size: 10px;
   font-weight: 500;
+  line-height: 1;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--highlight);
