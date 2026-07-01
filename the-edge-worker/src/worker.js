@@ -61,7 +61,34 @@ function buildMessages(history, userMessage) {
   return cleaned;
 }
 
+// Coarse per-IP rate limit backed by KV. Guards the endpoints that call the
+// paid Anthropic API so a bot or bored visitor can't run up the bill. Fixed
+// window; eventual consistency is fine for abuse protection. Fails open if KV
+// is unavailable so a storage blip never blocks real founders.
+async function rateLimited(env, request, name, limit, windowSec) {
+  if (!env.SESSIONS) return false;
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const bucket = Math.floor(Date.now() / 1000 / windowSec);
+  const key = `rl:${name}:${ip}:${bucket}`;
+  try {
+    const current = parseInt((await env.SESSIONS.get(key)) || '0', 10);
+    if (current >= limit) return true;
+    await env.SESSIONS.put(key, String(current + 1), { expirationTtl: windowSec * 2 });
+    return false;
+  } catch (err) {
+    console.error('Rate limit check failed:', String(err));
+    return false;
+  }
+}
+
+const RATE_LIMIT_MESSAGE = 'Too many requests. Please slow down and try again in a moment.';
+
 async function handleChat(request, env) {
+  if (await rateLimited(env, request, 'chat', 40, 60) ||
+      await rateLimited(env, request, 'chat-day', 500, 86400)) {
+    return json({ error: RATE_LIMIT_MESSAGE }, env, 429);
+  }
+
   const { userMessage, currentStepId, pushbackCount = 0, history = [] } = await request.json();
   if (!userMessage || !currentStepId) return json({ error: 'Missing userMessage or currentStepId' }, env, 400);
 
@@ -125,6 +152,11 @@ const ONELINER_STYLES = [
 ];
 
 async function handleOneLiners(request, env) {
+  if (await rateLimited(env, request, 'oneliners', 15, 60) ||
+      await rateLimited(env, request, 'oneliners-day', 100, 86400)) {
+    return json({ error: RATE_LIMIT_MESSAGE }, env, 429);
+  }
+
   const { answers = {} } = await request.json();
   const product = answers['00'] || 'the product';
 
