@@ -20,5 +20,9 @@ id = "e46cd1dca61146a4baf32efc203c92b2"
 # Secrets are set once on the deployed Worker and persist across deploys:
 #   wrangler secret put ANTHROPIC_API_KEY
 #   wrangler secret put RESEND_API_KEY
+# Optional — enable Google Sheet lead capture (see leads-sheet.gs for setup):
+#   wrangler secret put LEADS_WEBHOOK_URL      # Apps Script /exec URL
+#   wrangler secret put LEADS_WEBHOOK_SECRET   # shared secret matching the script
+# recordLead() no-ops while LEADS_WEBHOOK_URL is unset, so this is safe to ship early.
 # CI deploys (GitHub Actions) do NOT touch secrets.
 # For local `wrangler dev`, put them in .dev.vars (gitignored) instead.

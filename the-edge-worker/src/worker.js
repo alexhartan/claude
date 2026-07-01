@@ -229,6 +229,18 @@ async function handleSave(request, env) {
     html: renderSaveProgressEmail({ resumeUrl, lockedCount }),
   });
 
+  // Capture the warm lead now — someone who gives their email mid-exercise but
+  // never finishes would otherwise be invisible (no completion notification).
+  await recordLead(env, {
+    type: 'save',
+    savedAt: new Date().toISOString(),
+    email,
+    product: state?.lockedAnswers?.['00'] || '',
+    lockedCount,
+    resumeUrl,
+    answers: state?.lockedAnswers || {},
+  });
+
   return json({ ok: true, sessionId }, env);
 }
 
@@ -264,6 +276,12 @@ async function handleComplete(request, env) {
       { expirationTtl: 60 * 60 * 24 * 365 });
   }
 
+  await recordLead(env, {
+    type: 'complete',
+    completedAt: new Date().toISOString(),
+    email, product, oneLiner, answers,
+  });
+
   // Notify the team that a new lead completed the exercise. Best-effort:
   // a failed notification must not break the founder's Signal Map delivery.
   if (env.NOTIFY_EMAIL) {
@@ -279,6 +297,23 @@ async function handleComplete(request, env) {
   }
 
   return json({ ok: true }, env);
+}
+
+// Append a lead to the external store (a Google Apps Script web app that writes
+// a row to a Sheet — see the-edge-worker/leads-sheet.gs). Best-effort: a failed
+// or unconfigured webhook must never break the founder-facing flow. No-ops when
+// LEADS_WEBHOOK_URL is unset, so it's safe to ship before the Sheet exists.
+async function recordLead(env, lead) {
+  if (!env.LEADS_WEBHOOK_URL) return;
+  try {
+    await fetch(env.LEADS_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ secret: env.LEADS_WEBHOOK_SECRET || '', ...lead }),
+    });
+  } catch (err) {
+    console.error('Lead webhook failed:', String(err));
+  }
 }
 
 async function sendEmail(env, { to, subject, html }) {
