@@ -4,8 +4,20 @@ import SignalSummary from './components/SignalSummary.jsx';
 import SaveProgressModal from './components/SaveProgressModal.jsx';
 import OneLinerSelect from './components/OneLinerSelect.jsx';
 import Intro from './components/Intro.jsx';
-import { STEPS, TOTAL_STEPS, getStepById } from './lib/steps.js';
+import { STEPS, TOTAL_STEPS, getStepById, isIntakeId, getIntakeStep } from './lib/steps.js';
 import { loadSession, saveSession, clearSession } from './lib/storage.js';
+
+// The assistant message that introduces the step the founder is entering.
+// Intake steps carry their own probe; entering the first real step (01) leads
+// with the brand-story transition and injects the locked brand name.
+function openingMessageForStep(nextId, brand) {
+  if (isIntakeId(nextId)) return getIntakeStep(nextId).probe;
+  const step = getStepById(nextId);
+  if (nextId === '01') {
+    return `Excellent! Now let's build the brand story of ${brand || 'your brand'}.\n\n${step.openingProbe}`;
+  }
+  return step.openingProbe;
+}
 
 // Toggle: VITE_USE_MOCK=true for offline heuristics, false for real Worker
 import * as realApi from './lib/api.js';
@@ -30,6 +42,9 @@ export default function App() {
   const [currentStepId, setCurrentStepId] = useState('00');
   const [pushbackCount, setPushbackCount] = useState(0);
   const [lockedAnswers, setLockedAnswers] = useState({});
+  // Context intake answers (goal/blocker/tailwind). Kept separate from
+  // lockedAnswers so they never reach the sidebar, one-liner, or Signal Map.
+  const [contextAnswers, setContextAnswers] = useState({});
   const [email, setEmail] = useState('');
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [stage, setStage] = useState(STAGE.INTRO);
@@ -41,6 +56,7 @@ export default function App() {
     setCurrentStepId(session.currentStepId || '00');
     setPushbackCount(session.pushbackCount || 0);
     setLockedAnswers(session.lockedAnswers || {});
+    setContextAnswers(session.contextAnswers || {});
     setEmail(session.email || '');
     setStage(session.stage || STAGE.CONVERSATION);
     setChosenOneLiner(session.chosenOneLiner || null);
@@ -73,8 +89,8 @@ export default function App() {
 
   useEffect(() => {
     if (stage === STAGE.INTRO) return;
-    saveSession({ messages, currentStepId, pushbackCount, lockedAnswers, email, stage, chosenOneLiner });
-  }, [messages, currentStepId, pushbackCount, lockedAnswers, email, stage, chosenOneLiner]);
+    saveSession({ messages, currentStepId, pushbackCount, lockedAnswers, contextAnswers, email, stage, chosenOneLiner });
+  }, [messages, currentStepId, pushbackCount, lockedAnswers, contextAnswers, email, stage, chosenOneLiner]);
 
   function handleStart() {
     setStage(STAGE.CONVERSATION);
@@ -95,14 +111,21 @@ export default function App() {
       setMessages((prev) => [...prev, { role: 'assistant', content: response.assistant_message }]);
 
       if (response.step_status === 'locked' && response.captured_answer) {
-        setLockedAnswers((prev) => ({ ...prev, [currentStepId]: response.captured_answer }));
+        const lockedId = currentStepId;
+        if (isIntakeId(lockedId)) {
+          // Intake answers go to their own bucket, keyed by field (goal/blocker/tailwind).
+          const field = getIntakeStep(lockedId).field;
+          setContextAnswers((prev) => ({ ...prev, [field]: response.captured_answer }));
+        } else {
+          setLockedAnswers((prev) => ({ ...prev, [lockedId]: response.captured_answer }));
+        }
         setPushbackCount(0);
 
         if (response.next_step) {
-          const nextStep = getStepById(response.next_step);
+          const brand = lockedAnswers['00'];
           setCurrentStepId(response.next_step);
           setTimeout(() => {
-            setMessages((prev) => [...prev, { role: 'assistant', content: nextStep.openingProbe }]);
+            setMessages((prev) => [...prev, { role: 'assistant', content: openingMessageForStep(response.next_step, brand) }]);
           }, 600);
         } else {
           setTimeout(() => setStage(STAGE.ONELINER_SELECT), 800);
@@ -123,9 +146,9 @@ export default function App() {
     if (USE_MOCK) { console.log('[mock] would save/email for:', submittedEmail); return; }
     try {
       if (isComplete) {
-        await realApi.completeAndEmail({ email: submittedEmail, answers: lockedAnswers, oneLiner: chosenOneLiner });
+        await realApi.completeAndEmail({ email: submittedEmail, answers: lockedAnswers, oneLiner: chosenOneLiner, context: contextAnswers });
       } else {
-        await realApi.saveProgress({ email: submittedEmail, state: { lockedAnswers, currentStepId, messages, chosenOneLiner } });
+        await realApi.saveProgress({ email: submittedEmail, state: { lockedAnswers, contextAnswers, currentStepId, messages, chosenOneLiner } });
       }
     } catch (e) { console.error('Email/save failed:', e); }
   }
@@ -145,6 +168,7 @@ export default function App() {
   const lockedCount = Object.keys(lockedAnswers).length;
   const isComplete = stage === STAGE.COMPLETE;
   const isIntro = stage === STAGE.INTRO;
+  const inIntake = isIntakeId(currentStepId);
   const currentStepNum = Math.min(lockedCount + 1, TOTAL_STEPS);
   // Sidebar stays collapsed until the founder has locked at least one answer.
   const showSidebar = !isIntro && lockedCount > 0;
@@ -158,7 +182,7 @@ export default function App() {
         </div>
         {!isIntro && (
           <div className="app-header-progress">
-            <span className="app-header-step">Step {currentStepNum} of {TOTAL_STEPS}</span>
+            <span className="app-header-step">{inIntake ? 'Quick context' : `Step ${currentStepNum} of ${TOTAL_STEPS}`}</span>
             {lockedCount > 0 && (
               <button className="app-header-reset" onClick={handleReset}>Start over</button>
             )}

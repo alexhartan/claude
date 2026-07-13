@@ -97,10 +97,20 @@ PUSH: feature-list functional, generic, identity missing or restating outcome.
 PROVOKE toward: Monday-after outcome + who they become (contrast with struggle).`,
 };
 
+// Context intake (ctx_*): three qualification questions about the FOUNDER'S own
+// business, asked before the exercise. The Signal Map method does not apply here.
+const INTAKE_GUIDANCE = `CURRENT STEP: Context intake (for the team, not part of the Signal Map).
+This is a light qualification question about the FOUNDER'S OWN business — their goals, their blockers, or their momentum. This is NOT a positioning step.
+OVERRIDE: The "user is the hero / redirect to the customer" prime directive does NOT apply here. Do not redirect to their customer. Do not apply positioning scrutiny. They are meant to talk about themselves.
+PASS readily: lock almost anything of substance, in their own words lightly tidied.
+PUSH only if the answer is empty or a single word, and then at most once, with a brief, warm nudge for a sentence or two. Never push twice.`;
+
 export function buildStepSystem(stepId, pushbackCount) {
-  const guidance = STEP_GUIDANCE[stepId] || '';
-  const pushbackNote = pushbackCount >= 2
-    ? `\n\nIMPORTANT: After 2 pushbacks already. You MUST lock now.`
-    : `\n\nCurrent pushback count: ${pushbackCount}. May push back at most ${2 - pushbackCount} more time(s).`;
+  const isIntake = stepId.startsWith('ctx_');
+  const guidance = isIntake ? INTAKE_GUIDANCE : (STEP_GUIDANCE[stepId] || '');
+  const maxPush = isIntake ? 1 : 2;
+  const pushbackNote = pushbackCount >= maxPush
+    ? `\n\nIMPORTANT: You MUST lock now.`
+    : `\n\nCurrent pushback count: ${pushbackCount}. May push back at most ${maxPush - pushbackCount} more time(s).`;
   return `${guidance}${pushbackNote}`;
 }

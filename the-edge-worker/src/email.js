@@ -53,12 +53,26 @@ export function renderSignalMapEmail({ product, oneLiner, answers }) {
     </td></tr></table></body></html>`;
 }
 
-export function renderLeadNotificationEmail({ product, email, oneLiner, answers }) {
+export function renderLeadNotificationEmail({ product, email, oneLiner, answers, context }) {
   const rows = MAP_ROWS.filter(([, key]) => answers[key]).map(([label, key]) => `
     <tr><td style="padding:10px 0;border-bottom:1px solid #eee;">
       <div style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:1px;color:#888;text-transform:uppercase;margin-bottom:4px;">${esc(label)}</div>
       <div style="font-family:Arial,sans-serif;font-size:14px;color:#111;line-height:1.5;">${esc(answers[key])}</div>
     </td></tr>`).join('');
+
+  // Qualification intake (goal / blocker / tailwind). Surfaced at the top —
+  // it's the fit signal, above the positioning detail.
+  const ctx = context || {};
+  const ctxItems = [['Goal', ctx.goal], ['Blocker', ctx.blocker], ['Tailwind', ctx.tailwind]]
+    .filter(([, v]) => v)
+    .map(([label, v]) => `
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;letter-spacing:1px;color:#a67c00;text-transform:uppercase;margin-bottom:3px;font-weight:bold;">${esc(label)}</div>
+        <div style="font-size:14px;color:#111;line-height:1.5;">${esc(v)}</div>
+      </div>`).join('');
+  const ctxBlock = ctxItems
+    ? `<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:16px 20px;margin-bottom:20px;">${ctxItems}</div>`
+    : '';
 
   return `<!DOCTYPE html><html><body style="margin:0;padding:24px;background:#f4f4f4;font-family:Arial,sans-serif;">
     <table width="640" cellpadding="0" cellspacing="0" style="max-width:640px;margin:0 auto;background:#fff;border-radius:8px;">
@@ -68,6 +82,7 @@ export function renderLeadNotificationEmail({ product, email, oneLiner, answers 
         <p style="font-size:14px;color:#444;margin:0 0 20px;">
           From <a href="mailto:${esc(email)}" style="color:#1d4873;">${esc(email)}</a>
         </p>
+        ${ctxBlock}
         <div style="background:#f4f7fb;border-radius:6px;padding:16px 20px;margin-bottom:20px;">
           <div style="font-size:11px;letter-spacing:1px;color:#888;text-transform:uppercase;margin-bottom:6px;">Chosen one-liner</div>
           <div style="font-size:16px;color:#111;line-height:1.4;">${esc(oneLiner)}</div>

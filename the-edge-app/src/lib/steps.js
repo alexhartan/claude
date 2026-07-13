@@ -25,10 +25,39 @@ export const STEPS = [
 
 export const TOTAL_STEPS = STEPS.length;
 
+// Context intake — three qualification questions asked after the brand name and
+// before the positioning exercise. These are for the team (lead capture), NOT
+// part of the Signal Map: they never appear in the sidebar, the one-liner, or
+// the founder's report, and they do not advance the "N of 10" counter.
+export const INTAKE_STEPS = [
+  { id: 'ctx_goal', field: 'goal',
+    probe: "Before we dive in, three quick questions for context.\n\nWhat are you trying to make happen in the next 6–12 months? And what's made it a priority now, specifically?" },
+  { id: 'ctx_blocker', field: 'blocker',
+    probe: "What's the biggest thing standing between you and that right now?" },
+  { id: 'ctx_tailwind', field: 'tailwind',
+    probe: "What's working in your favor right now? Inside and outside of your business." },
+];
+
+const INTAKE_BY_ID = Object.fromEntries(INTAKE_STEPS.map((s) => [s.id, s]));
+export function isIntakeId(id) { return typeof id === 'string' && id.startsWith('ctx_'); }
+export function getIntakeStep(id) { return INTAKE_BY_ID[id]; }
+
+// Full conversation order: brand name (00) → three context questions → the ten
+// Signal Map steps. STEPS[0] is '00', so the ten pick up from STEPS.slice(1).
+export const FLOW_ORDER = ['00', 'ctx_goal', 'ctx_blocker', 'ctx_tailwind', ...STEPS.slice(1).map((s) => s.id)];
+
 export function getStepById(id) { return STEPS.find((s) => s.id === id); }
 export function getStepIndex(id) { return STEPS.findIndex((s) => s.id === id); }
 export function getNextStepId(currentId) {
   const idx = getStepIndex(currentId);
   if (idx === -1 || idx === STEPS.length - 1) return null;
   return STEPS[idx + 1].id;
+}
+
+// Next id in the full flow (includes the intake questions). Returns null after
+// the last Signal Map step, which the app reads as "go to the one-liner stage".
+export function getNextFlowId(currentId) {
+  const i = FLOW_ORDER.indexOf(currentId);
+  if (i === -1 || i === FLOW_ORDER.length - 1) return null;
+  return FLOW_ORDER[i + 1];
 }

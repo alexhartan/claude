@@ -7,9 +7,9 @@
  *
  * ── One-time setup ──────────────────────────────────────────────────────────
  * 1. Create a Google Sheet. In the first tab, add this header row (row 1):
- *      Timestamp | Type | Email | Product | One-liner | User | Obstacle |
- *      Struggle | Just Cause | Solution | Process | Next Step | Cost |
- *      Transformation | Locked count | Resume URL
+ *      Timestamp | Type | Email | Product | Goal | Blocker | Tailwind |
+ *      One-liner | User | Obstacle | Struggle | Just Cause | Solution |
+ *      Process | Next Step | Cost | Transformation | Locked count | Resume URL
  * 2. Extensions → Apps Script. Replace the default file with this whole file.
  * 3. Set a shared secret below (SECRET) — any random string.
  * 4. Deploy → New deployment → type "Web app":
@@ -44,6 +44,9 @@ function doPost(e) {
       data.type || '',
       data.email || '',
       data.product || answers['00'] || '',
+      data.goal || '',
+      data.blocker || '',
+      data.tailwind || '',
       data.oneLiner || '',
     ];
     ANSWER_KEYS.forEach(function (k) { row.push(answers[k] || ''); });

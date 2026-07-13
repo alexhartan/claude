@@ -1,6 +1,6 @@
 // Real backend client. Mirrors mockChat contract.
 
-import { getNextStepId } from './steps.js';
+import { getNextFlowId } from './steps.js';
 import { localOneLiners } from './oneliners.js';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8787';
@@ -13,7 +13,7 @@ export async function chat({ userMessage, currentStepId, pushbackCount, history 
   });
   if (!res.ok) throw new Error(`Chat request failed: ${res.status}`);
   const data = await res.json();
-  const next_step = data.step_status === 'locked' ? getNextStepId(currentStepId) : null;
+  const next_step = data.step_status === 'locked' ? getNextFlowId(currentStepId) : null;
   return {
     assistant_message: data.assistant_message,
     step_status: data.step_status,
@@ -33,11 +33,11 @@ export async function saveProgress({ email, state }) {
   return res.json();
 }
 
-export async function completeAndEmail({ email, answers, oneLiner }) {
+export async function completeAndEmail({ email, answers, oneLiner, context }) {
   const res = await fetch(`${API_BASE}/api/complete`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, answers, oneLiner }),
+    body: JSON.stringify({ email, answers, oneLiner, context }),
   });
   if (!res.ok) throw new Error(`Complete failed: ${res.status}`);
   return res.json();

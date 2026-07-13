@@ -1,10 +1,17 @@
 // Mocked LLM responses for offline prototype testing
-import { getNextStepId } from './steps.js';
+import { getNextFlowId, isIntakeId } from './steps.js';
 import { localOneLiners } from './oneliners.js';
 
 function analyzeAnswer(answer, stepId, pushbackCount) {
   const text = answer.trim().toLowerCase();
   const wordCount = text.split(/\s+/).length;
+
+  // Context intake: light touch. Accept readily; one nudge only if a single word.
+  if (isIntakeId(stepId)) {
+    if (pushbackCount >= 1) return { needsPushback: false, reason: 'intake_ok' };
+    if (wordCount < 2) return { needsPushback: true, reason: 'intake_thin' };
+    return { needsPushback: false, reason: 'intake_ok' };
+  }
 
   if (pushbackCount >= 2) return { needsPushback: false, reason: 'max_pushbacks' };
 
@@ -78,6 +85,7 @@ const PUSHBACK_RESPONSES = {
   passive_process: ["The shape is right. One adjustment: let's rewrite from their seat. What do they do at each step?"],
   generic_cost: ["That's directionally right. Behind on what, specifically? What's the version they'd recognize themselves in?"],
   transformation_thin: ["You've got the functional half. Now the identity. Who do they become in the eyes of their team?"],
+  intake_thin: ['Give me a sentence or two — it helps me tune the rest.'],
 };
 
 const CONFIRMATIONS = ['Good. Now next step.', "Got it. Onto the next.", "That works. Moving on.", "Locked. Next."];
@@ -103,7 +111,7 @@ export async function mockChat({ userMessage, currentStepId, pushbackCount }) {
     step_status: 'locked',
     pushback_count: pushbackCount,
     captured_answer: userMessage.trim(),
-    next_step: getNextStepId(currentStepId),
+    next_step: getNextFlowId(currentStepId),
   };
 }
 

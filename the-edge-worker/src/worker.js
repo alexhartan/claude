@@ -263,6 +263,7 @@ async function handleSave(request, env) {
 
   // Capture the warm lead now — someone who gives their email mid-exercise but
   // never finishes would otherwise be invisible (no completion notification).
+  const ctx = state?.contextAnswers || {};
   await recordLead(env, {
     type: 'save',
     savedAt: new Date().toISOString(),
@@ -271,6 +272,7 @@ async function handleSave(request, env) {
     lockedCount,
     resumeUrl,
     answers: state?.lockedAnswers || {},
+    goal: ctx.goal || '', blocker: ctx.blocker || '', tailwind: ctx.tailwind || '',
   });
 
   return json({ ok: true, sessionId }, env);
@@ -289,12 +291,13 @@ async function handleSession(url, env) {
 }
 
 async function handleComplete(request, env) {
-  const { email, answers, oneLiner } = await request.json();
+  const { email, answers, oneLiner, context } = await request.json();
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return json({ error: 'Valid email required' }, env, 400);
   }
 
   const product = answers?.['00'] || 'your product';
+  const ctx = context || {};
 
   await sendEmail(env, {
     to: email,
@@ -304,7 +307,7 @@ async function handleComplete(request, env) {
 
   if (env.SESSIONS) {
     await env.SESSIONS.put(`lead:${Date.now()}:${email}`,
-      JSON.stringify({ email, product, oneLiner, answers, completedAt: Date.now() }),
+      JSON.stringify({ email, product, oneLiner, answers, context: ctx, completedAt: Date.now() }),
       { expirationTtl: 60 * 60 * 24 * 365 });
   }
 
@@ -312,6 +315,7 @@ async function handleComplete(request, env) {
     type: 'complete',
     completedAt: new Date().toISOString(),
     email, product, oneLiner, answers,
+    goal: ctx.goal || '', blocker: ctx.blocker || '', tailwind: ctx.tailwind || '',
   });
 
   // Notify the team that a new lead completed the exercise. Best-effort:
@@ -321,7 +325,7 @@ async function handleComplete(request, env) {
       await sendEmail(env, {
         to: env.NOTIFY_EMAIL,
         subject: `New Edge lead: ${product} (${email})`,
-        html: renderLeadNotificationEmail({ product, email, oneLiner, answers }),
+        html: renderLeadNotificationEmail({ product, email, oneLiner, answers, context: ctx }),
       });
     } catch (err) {
       console.error('Lead notification failed:', String(err));
