@@ -80,8 +80,8 @@ export function renderSignalMapEmail({ product, oneLiner, answers }) {
         <tr><td style="padding:44px 0 0;">
           <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid rgba(255,255,255,0.14);">
             <tr>
-              <td style="padding-top:26px;"><img src="${LOGO_GALVANITE}" width="159" height="29" alt="Galvanite" style="display:block;border:0;" /></td>
-              <td align="right" style="padding-top:26px;font-family:${sans};font-size:13px;line-height:1.6;color:${EMAIL_UI.footerMuted};">&copy; ${new Date().getFullYear()} <a href="https://www.galvanite.io" style="color:${BRAND.white};text-decoration:none;">Galvanite.io</a><br/>All rights reserved.</td>
+              <td style="padding-top:13px;"><img src="${LOGO_GALVANITE}" width="163" height="29" alt="Galvanite" style="display:block;border:0;" /></td>
+              <td align="right" style="padding-top:13px;font-family:${sans};font-size:13px;line-height:1.6;color:${EMAIL_UI.footerMuted};">&copy; ${new Date().getFullYear()} <a href="https://www.galvanite.io?utm_source=edge&utm_medium=email&utm_campaign=signal-map" style="color:${BRAND.white};text-decoration:none;">Galvanite.io</a><br/>All rights reserved.</td>
             </tr>
           </table>
         </td></tr>
