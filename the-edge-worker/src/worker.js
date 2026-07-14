@@ -3,7 +3,7 @@
 import { SYSTEM_BASE, buildStepSystem } from './systemPrompt.js';
 import { renderSignalMapEmail, renderSaveProgressEmail, renderLeadNotificationEmail } from './email.js';
 
-const MODEL = 'claude-sonnet-4-6';
+const MODEL = 'claude-opus-4-8';
 
 function corsHeaders(env) {
   return {
@@ -83,9 +83,13 @@ async function rateLimited(env, request, name, limit, windowSec) {
 
 const RATE_LIMIT_MESSAGE = 'Too many requests. Please slow down and try again in a moment.';
 
+// Daily caps sized to hold worst-case Anthropic spend under ~$1/IP/day on Opus 4.8
+// ($5/$25 per MTok): a chat call is ~1.7K in + ~150 out ≈ $0.012, a one-liner call
+// ~0.9K in + ~350 out ≈ $0.013. 75 chats ($0.90) + 6 one-liners ($0.08) ≈ $0.98.
+// A real founder uses ~19 calls per completed session, so honest use never hits this.
 async function handleChat(request, env) {
   if (await rateLimited(env, request, 'chat', 40, 60) ||
-      await rateLimited(env, request, 'chat-day', 500, 86400)) {
+      await rateLimited(env, request, 'chat-day', 75, 86400)) {
     return json({ error: RATE_LIMIT_MESSAGE }, env, 429);
   }
 
@@ -153,7 +157,7 @@ const ONELINER_STYLES = [
 
 async function handleOneLiners(request, env) {
   if (await rateLimited(env, request, 'oneliners', 15, 60) ||
-      await rateLimited(env, request, 'oneliners-day', 100, 86400)) {
+      await rateLimited(env, request, 'oneliners-day', 6, 86400)) {
     return json({ error: RATE_LIMIT_MESSAGE }, env, 429);
   }
 

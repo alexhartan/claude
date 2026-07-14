@@ -9,7 +9,7 @@ const BRAND = {
 const MAP_ROWS = [
   ['THE BRAND', '00'], ['THE USER', '01'],
   ['THE OBSTACLE', '02a'], ['THE STRUGGLE', '02b'], ['THE JUST CAUSE', '02c'],
-  ['THE SOLUTION', '03'], ['THE PROCESS', '04'], ['THE NEXT STEP', '05'],
+  ['THE SOLUTION', '03'], ['THE PROCESS', '04'], ['TAKING ACTION', '05'],
   ['THE COST OF INACTION', '06'], ['THE TRANSFORMATION', '07'],
 ];
 
@@ -17,10 +17,16 @@ function esc(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// Escape AND preserve the founder's line breaks (process steps, dual CTAs,
+// two-part transformations should stack, not run together on one line).
+function escNl(s) {
+  return esc(s).replace(/\n/g, '<br/>');
+}
+
 // Light-card design on navy. Fonts are email-safe stands-ins for the brand set:
 // headings/body in a Helvetica/Arial stack, map values in Georgia serif.
 const EMAIL_UI = {
-  bg: '#0d2138',            // outer navy
+  bg: '#0E3154',            // outer navy
   cardText: '#1d3557',      // serif values on white
   cardHeading: '#31639c',   // card H1 blue
   label: '#4a7fd4',         // row labels
@@ -29,8 +35,9 @@ const EMAIL_UI = {
   link: '#2563c4',
   footerMuted: '#7d93b2',
 };
-const CALL_URL = 'https://www.galvanite.io?utm_source=edge&utm_medium=email';
+const CALL_URL = 'https://www.galvanite.io/discovery?utm_source=edge&utm_medium=email&utm_campaign=signal-map';
 const LOGO_EDGE = 'https://edge.galvanite.io/email/edge-logo.png';
+const LOGO_GALVANITE = 'https://edge.galvanite.io/email/galvanite-logo.png';
 
 export function renderSignalMapEmail({ product, oneLiner, answers }) {
   const sans = `'Helvetica Neue',Helvetica,Arial,sans-serif`;
@@ -38,7 +45,7 @@ export function renderSignalMapEmail({ product, oneLiner, answers }) {
   const row = (label, value) => `
     <tr><td style="padding:22px 0;border-bottom:1px solid ${EMAIL_UI.divider};">
       <div style="font-family:${sans};font-size:12px;font-weight:bold;letter-spacing:2px;color:${EMAIL_UI.label};text-transform:uppercase;margin-bottom:8px;">${esc(label)}</div>
-      <div style="font-family:Georgia,serif;font-size:22px;line-height:1.45;color:${EMAIL_UI.cardText};">${esc(value)}</div>
+      <div style="font-family:Georgia,serif;font-size:22px;line-height:1.45;color:${EMAIL_UI.cardText};">${escNl(value)}</div>
     </td></tr>`;
 
   // THE BRAND first, then the chosen one-liner, then the remaining map rows.
@@ -73,7 +80,7 @@ export function renderSignalMapEmail({ product, oneLiner, answers }) {
         <tr><td style="padding:44px 0 0;">
           <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid rgba(255,255,255,0.14);">
             <tr>
-              <td style="padding-top:26px;font-family:${sans};font-size:20px;font-weight:bold;color:${BRAND.white};">Galvanite</td>
+              <td style="padding-top:26px;"><img src="${LOGO_GALVANITE}" width="159" height="29" alt="Galvanite" style="display:block;border:0;" /></td>
               <td align="right" style="padding-top:26px;font-family:${sans};font-size:13px;line-height:1.6;color:${EMAIL_UI.footerMuted};">&copy; ${new Date().getFullYear()} <a href="https://www.galvanite.io" style="color:${BRAND.white};text-decoration:none;">Galvanite.io</a><br/>All rights reserved.</td>
             </tr>
           </table>
@@ -87,7 +94,7 @@ export function renderLeadNotificationEmail({ product, email, oneLiner, answers,
   const rows = MAP_ROWS.filter(([, key]) => answers[key]).map(([label, key]) => `
     <tr><td style="padding:10px 0;border-bottom:1px solid #eee;">
       <div style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:1px;color:#888;text-transform:uppercase;margin-bottom:4px;">${esc(label)}</div>
-      <div style="font-family:Arial,sans-serif;font-size:14px;color:#111;line-height:1.5;">${esc(answers[key])}</div>
+      <div style="font-family:Arial,sans-serif;font-size:14px;color:#111;line-height:1.5;">${escNl(answers[key])}</div>
     </td></tr>`).join('');
 
   // Qualification intake (goal / blocker / tailwind). Surfaced at the top —
