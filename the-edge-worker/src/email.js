@@ -7,7 +7,7 @@ const BRAND = {
 };
 
 const MAP_ROWS = [
-  ['THE PRODUCT', '00'], ['THE USER', '01'],
+  ['THE BRAND', '00'], ['THE USER', '01'],
   ['THE OBSTACLE', '02a'], ['THE STRUGGLE', '02b'], ['THE JUST CAUSE', '02c'],
   ['THE SOLUTION', '03'], ['THE PROCESS', '04'], ['THE NEXT STEP', '05'],
   ['THE COST OF INACTION', '06'], ['THE TRANSFORMATION', '07'],
@@ -17,47 +17,68 @@ function esc(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-export function renderSignalMapEmail({ product, oneLiner, answers }) {
-  const rows = MAP_ROWS.filter(([, key]) => answers[key]).map(([label, key]) => `
-    <tr><td style="padding:0 0 12px;">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.blueCard};border-radius:8px;">
-        <tr><td style="padding:18px 22px;">
-          <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;color:${BRAND.highlight};text-transform:uppercase;margin-bottom:8px;">${esc(label)}</div>
-          <div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.55;color:${BRAND.chalk};">${esc(answers[key])}</div>
-        </td></tr>
-      </table>
-    </td></tr>`).join('');
+// Light-card design on navy. Fonts are email-safe stands-ins for the brand set:
+// headings/body in a Helvetica/Arial stack, map values in Georgia serif.
+const EMAIL_UI = {
+  bg: '#0d2138',            // outer navy
+  cardText: '#1d3557',      // serif values on white
+  cardHeading: '#31639c',   // card H1 blue
+  label: '#4a7fd4',         // row labels
+  bodyGray: '#4a5568',      // card paragraphs
+  divider: '#e3e8ef',       // row dividers on white
+  link: '#2563c4',
+  footerMuted: '#7d93b2',
+};
+const CALL_URL = 'https://www.galvanite.io?utm_source=edge&utm_medium=email';
+const LOGO_EDGE = 'https://edge.galvanite.io/email/edge-logo.png';
 
-  return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:${BRAND.navyDeep};">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.navyDeep};padding:40px 0;">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:${BRAND.navy};border-radius:12px;overflow:hidden;">
-        <tr><td style="padding:40px 40px 24px;">
-          <div style="font-family:Arial,sans-serif;font-size:13px;letter-spacing:3px;color:${BRAND.highlight};text-transform:uppercase;">The Edge by Galvanite</div>
-          <h1 style="font-family:Georgia,serif;font-size:30px;font-weight:normal;color:${BRAND.white};margin:16px 0 0;">Your Signal Map</h1>
-          <p style="font-family:Arial,sans-serif;font-size:14px;color:${BRAND.chalk};margin:8px 0 0;">For ${esc(product)}</p>
+export function renderSignalMapEmail({ product, oneLiner, answers }) {
+  const sans = `'Helvetica Neue',Helvetica,Arial,sans-serif`;
+
+  const row = (label, value) => `
+    <tr><td style="padding:22px 0;border-bottom:1px solid ${EMAIL_UI.divider};">
+      <div style="font-family:${sans};font-size:12px;font-weight:bold;letter-spacing:2px;color:${EMAIL_UI.label};text-transform:uppercase;margin-bottom:8px;">${esc(label)}</div>
+      <div style="font-family:Georgia,serif;font-size:22px;line-height:1.45;color:${EMAIL_UI.cardText};">${esc(value)}</div>
+    </td></tr>`;
+
+  // THE BRAND first, then the chosen one-liner, then the remaining map rows.
+  const rows = [
+    answers['00'] ? row('The Brand', answers['00']) : '',
+    oneLiner ? row('Your One-Liner', oneLiner) : '',
+    ...MAP_ROWS.filter(([, key]) => key !== '00' && answers[key]).map(([label, key]) => row(label, answers[key])),
+  ].join('');
+
+  return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:${EMAIL_UI.bg};">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:${EMAIL_UI.bg};">
+    <tr><td align="center" style="padding:36px 16px 48px;">
+      <table width="640" cellpadding="0" cellspacing="0" style="max-width:640px;">
+
+        <tr><td style="padding:0 0 28px;">
+          <img src="${LOGO_EDGE}" width="196" height="36" alt="The Edge by Galvanite" style="display:block;border:0;" />
         </td></tr>
-        <tr><td style="padding:0 40px;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.blueCard};border-radius:8px;margin-bottom:24px;">
-            <tr><td style="padding:28px;">
-              <div style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;color:${BRAND.highlight};text-transform:uppercase;margin-bottom:10px;">Your One-Liner</div>
-              <div style="font-family:Georgia,serif;font-size:22px;line-height:1.4;color:${BRAND.white};">${esc(oneLiner)}</div>
-            </td></tr>
+
+        <tr><td style="background:#ffffff;border-radius:16px;padding:44px 44px 36px;">
+          <h1 style="font-family:${sans};font-size:34px;font-weight:bold;color:${EMAIL_UI.cardHeading};margin:0 0 18px;">Your Signal Map is ready</h1>
+          <p style="font-family:${sans};font-size:16px;line-height:1.6;color:${EMAIL_UI.bodyGray};margin:0 0 14px;">Great work! Your answers are now condensed into your own Signal Map. Save it, and put it to work across your website, pitch, and messaging.</p>
+          <p style="font-family:${sans};font-size:16px;line-height:1.6;color:${EMAIL_UI.bodyGray};margin:0 0 8px;">And if you need help taking this to the next level, <a href="${CALL_URL}" style="color:${EMAIL_UI.link};font-weight:bold;text-decoration:none;">book a discovery call</a>.</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${EMAIL_UI.divider};">${rows}</table>
+        </td></tr>
+
+        <tr><td style="padding:44px 0 8px;">
+          <h2 style="font-family:${sans};font-size:30px;font-weight:bold;color:${BRAND.white};margin:0 0 14px;">Need help with implementation?</h2>
+          <p style="font-family:${sans};font-size:16px;line-height:1.6;color:${BRAND.chalk};margin:0 0 26px;">If you're busy building product and need a hand turning this map into your marketing, let's have a discovery call and see how we can help.</p>
+          <a href="${CALL_URL}" style="display:block;background:${BRAND.yellow};color:${BRAND.navy};font-family:${sans};font-size:16px;font-weight:bold;text-decoration:none;text-align:center;padding:17px 28px;border-radius:8px;">Book a Discovery Call with Alex</a>
+        </td></tr>
+
+        <tr><td style="padding:44px 0 0;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid rgba(255,255,255,0.14);">
+            <tr>
+              <td style="padding-top:26px;font-family:${sans};font-size:20px;font-weight:bold;color:${BRAND.white};">Galvanite</td>
+              <td align="right" style="padding-top:26px;font-family:${sans};font-size:13px;line-height:1.6;color:${EMAIL_UI.footerMuted};">&copy; ${new Date().getFullYear()} <a href="https://www.galvanite.io" style="color:${BRAND.white};text-decoration:none;">Galvanite.io</a><br/>All rights reserved.</td>
+            </tr>
           </table>
         </td></tr>
-        <tr><td style="padding:0 40px 24px;"><table width="100%" cellpadding="0" cellspacing="0">${rows}</table></td></tr>
-        <tr><td style="padding:8px 40px 0;">
-          <p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:${BRAND.chalk};margin:0 0 28px;">Nice work. We took your answers and distilled them into the Signal Map above, yours to keep. Put it to work across your website, pitch, and messaging.</p>
-        </td></tr>
-        <tr><td style="padding:0 40px 40px;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.blueCard};border-radius:8px;">
-            <tr><td style="padding:28px;">
-              <div style="font-family:Georgia,serif;font-size:20px;color:${BRAND.white};margin-bottom:8px;">Need help with implementation?</div>
-              <p style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:${BRAND.chalk};margin:0 0 20px;">If you're busy building product and need a hand turning this map into your marketing, let's have a discovery call and see how we can help.</p>
-              <a href="https://www.galvanite.io?utm_source=edge&utm_medium=email" style="display:inline-block;background:${BRAND.yellow};color:${BRAND.navy};font-family:Arial,sans-serif;font-size:15px;font-weight:bold;text-decoration:none;padding:14px 28px;border-radius:6px;">Book a discovery call</a>
-            </td></tr>
-          </table>
-        </td></tr>
+
       </table>
     </td></tr></table></body></html>`;
 }
