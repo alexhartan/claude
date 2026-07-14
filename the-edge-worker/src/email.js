@@ -46,8 +46,17 @@ export function renderSignalMapEmail({ product, oneLiner, answers }) {
           </table>
         </td></tr>
         <tr><td style="padding:0 40px 24px;"><table width="100%" cellpadding="0" cellspacing="0">${rows}</table></td></tr>
-        <tr><td style="padding:8px 40px 40px;">
-          <a href="https://www.galvanite.io?utm_source=edge&utm_medium=email" style="display:inline-block;background:${BRAND.yellow};color:${BRAND.navy};font-family:Arial,sans-serif;font-size:15px;font-weight:bold;text-decoration:none;padding:14px 28px;border-radius:6px;">See how we can build on this</a>
+        <tr><td style="padding:8px 40px 0;">
+          <p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:${BRAND.chalk};margin:0 0 28px;">Nice work. We took your answers and distilled them into the Signal Map above, yours to keep. Put it to work across your website, pitch, and messaging.</p>
+        </td></tr>
+        <tr><td style="padding:0 40px 40px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.blueCard};border-radius:8px;">
+            <tr><td style="padding:28px;">
+              <div style="font-family:Georgia,serif;font-size:20px;color:${BRAND.white};margin-bottom:8px;">Need help with implementation?</div>
+              <p style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:${BRAND.chalk};margin:0 0 20px;">If you're busy building product and need a hand turning this map into your marketing, let's have a discovery call and see how we can help.</p>
+              <a href="https://www.galvanite.io?utm_source=edge&utm_medium=email" style="display:inline-block;background:${BRAND.yellow};color:${BRAND.navy};font-family:Arial,sans-serif;font-size:15px;font-weight:bold;text-decoration:none;padding:14px 28px;border-radius:6px;">Book a discovery call</a>
+            </td></tr>
+          </table>
         </td></tr>
       </table>
     </td></tr></table></body></html>`;
