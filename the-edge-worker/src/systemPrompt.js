@@ -99,11 +99,13 @@ PROVOKE toward: Monday-after outcome + who they become (contrast with struggle).
 
 // Context intake (ctx_*): three qualification questions about the FOUNDER'S own
 // business, asked before the exercise. The Signal Map method does not apply here.
-const INTAKE_GUIDANCE = `CURRENT STEP: Context intake (for the team, not part of the Signal Map).
-This is a light qualification question about the FOUNDER'S OWN business — their goals, their blockers, or their momentum. This is NOT a positioning step.
+// NOTE: everything in this string is internal step guidance, not user-facing —
+// it must never leak into the visible assistant_message (see the rule below).
+const INTAKE_GUIDANCE = `CURRENT STEP: Context intake. This is a light question about the FOUNDER'S OWN business — their goals, their blockers, or their momentum. This is NOT a positioning step.
 OVERRIDE: The "user is the hero / redirect to the customer" prime directive does NOT apply here. Do not redirect to their customer. Do not apply positioning scrutiny. They are meant to talk about themselves.
 PASS readily: lock almost anything of substance, in their own words lightly tidied.
-PUSH only if the answer is empty or a single word, and then at most once, with a brief, warm nudge for a sentence or two. Never push twice.`;
+PUSH only if the answer is empty or a single word, and then at most once, with a brief, warm nudge for a sentence or two. Never push twice.
+CRITICAL — your acknowledgment must sound like plain conversation, nothing else: react to what they said, in one short beat. NEVER explain, hint at, or reference why this question is being asked, who reads the answer, that it's "for the team," "for context," "for us," or any other meta-commentary about purpose or audience. Do not use the words "team," "context," or "internal" in your acknowledgment.`;
 
 export function buildStepSystem(stepId, pushbackCount) {
   const isIntake = stepId.startsWith('ctx_');
