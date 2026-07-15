@@ -17,10 +17,22 @@ function esc(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// Escape AND preserve the founder's line breaks (process steps, dual CTAs,
-// two-part transformations should stack, not run together on one line).
+// The model writes numbered steps and paired CTAs as one run-on sentence with
+// no literal newline ("...context. 2. Chat to..."), so there's nothing for a
+// plain \n->  <br/> pass to preserve. Insert breaks before rendering: before
+// each inline "N. " list marker, and before a "Transitional CTA:" /
+// "Direct CTA:" that isn't already at the very start of the answer.
+function normalizeAnswerBreaks(s) {
+  let t = String(s || '');
+  t = t.replace(/\.\s+(\d{1,2}\.\s)/g, '.\n$1');
+  t = t.replace(/([^\n])\s+((?:Direct|Transitional) CTA:)/gi, '$1\n$2');
+  return t;
+}
+
+// Escape AND break onto separate lines (process steps, dual CTAs, two-part
+// transformations should stack, not run together on one line).
 function escNl(s) {
-  return esc(s).replace(/\n/g, '<br/>');
+  return esc(normalizeAnswerBreaks(s)).replace(/\n/g, '<br/>');
 }
 
 // Light-card design on navy. Fonts are email-safe stands-ins for the brand set:
