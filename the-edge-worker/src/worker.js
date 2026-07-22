@@ -44,6 +44,13 @@ export default {
 // alternate roles. The client seeds the convo with an assistant opening line
 // and shows back-to-back assistant messages when a step locks, so normalize:
 // drop empties, merge consecutive same-role turns, trim leading assistant turns.
+// Step 00 now captures the business name plus what they sell / what's special,
+// so answers['00'] can be a full sentence. Derive a short label (first clause)
+// for places that need a token: the email subject and the one-liner prompt.
+function shortName(v) {
+  return String(v || '').split(/[.\n!?]/)[0].trim().slice(0, 80);
+}
+
 function buildMessages(history, userMessage) {
   const raw = [...history, { role: 'user', content: userMessage }];
   const cleaned = [];
@@ -162,17 +169,19 @@ async function handleOneLiners(request, env) {
   }
 
   const { answers = {} } = await request.json();
-  const product = answers['00'] || 'the product';
+  const product = shortName(answers['00']) || 'the product';
 
   const brief = [
-    ['Brand / product', answers['00']],
+    ['Business', answers['00']],
     ['User', answers['01']],
-    ['Obstacle (surface problem)', answers['02a']],
-    ['Struggle (how it feels)', answers['02b']],
-    ['Just cause / belief', answers['02c']],
-    ['Solution', answers['03']],
+    ['Problem (surface)', answers['02a']],
+    ['Frustration (how it feels)', answers['02b']],
+    ['Belief / why it matters', answers['02c']],
+    ['Empathy', answers['03a']],
+    ['Authority', answers['03b']],
     ['Process', answers['04']],
-    ['Next step', answers['05']],
+    ['Primary CTA', answers['05a']],
+    ['Secondary CTA', answers['05b']],
     ['Cost of inaction', answers['06']],
     ['Transformation', answers['07']],
   ].filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join('\n');
@@ -300,7 +309,7 @@ async function handleComplete(request, env) {
     return json({ error: 'Valid email required' }, env, 400);
   }
 
-  const product = answers?.['00'] || 'your product';
+  const product = shortName(answers?.['00']) || 'your product';
   const ctx = context || {};
 
   await sendEmail(env, {

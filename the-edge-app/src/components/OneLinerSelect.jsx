@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { TOTAL_STEPS } from '../lib/steps.js';
 
 export default function OneLinerSelect({ lockedAnswers, onConfirm, fetchOneLiners }) {
   const [variants, setVariants] = useState(null);
@@ -17,7 +18,7 @@ export default function OneLinerSelect({ lockedAnswers, onConfirm, fetchOneLiner
     return (
       <div className="oneliner-select">
         <div className="oneliner-select-header">
-          <div className="oneliner-eyebrow">10 of 10 done</div>
+          <div className="oneliner-eyebrow">{`${TOTAL_STEPS} of ${TOTAL_STEPS} done`}</div>
           <h2 className="oneliner-title">Polishing your one-liners…</h2>
           <p className="oneliner-subtitle">Turning your answers into three sharp drafts.</p>
         </div>
@@ -28,7 +29,7 @@ export default function OneLinerSelect({ lockedAnswers, onConfirm, fetchOneLiner
   return (
     <div className="oneliner-select">
       <div className="oneliner-select-header">
-        <div className="oneliner-eyebrow">10 of 10 done</div>
+        <div className="oneliner-eyebrow">{`${TOTAL_STEPS} of ${TOTAL_STEPS} done`}</div>
         <h2 className="oneliner-title">Three drafts. Which one resonates most?</h2>
         <p className="oneliner-subtitle">Pick one. We'll lead with it in your Signal Map.</p>
       </div>

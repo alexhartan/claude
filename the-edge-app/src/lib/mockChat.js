@@ -35,7 +35,7 @@ function analyzeAnswer(answer, stepId, pushbackCount) {
   if (stepId === '02c' && (text.includes("don't know") || text.includes('not sure') || text === 'skip')) {
     return { needsPushback: true, reason: 'philosophical_skip' };
   }
-  if (stepId === '03') {
+  if (stepId === '03a') {
     const featureWords = ['we have', 'we offer', 'we built', 'our platform', 'our product features'];
     if (featureWords.some((f) => text.includes(f)) && wordCount < 25) return { needsPushback: true, reason: 'feature_list' };
   }

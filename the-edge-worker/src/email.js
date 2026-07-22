@@ -7,9 +7,10 @@ const BRAND = {
 };
 
 const MAP_ROWS = [
-  ['THE BRAND', '00'], ['THE USER', '01'],
-  ['THE OBSTACLE', '02a'], ['THE STRUGGLE', '02b'], ['THE JUST CAUSE', '02c'],
-  ['THE SOLUTION', '03'], ['THE PROCESS', '04'], ['TAKING ACTION', '05'],
+  ['THE BUSINESS', '00'], ['THE USER', '01'],
+  ['THE PROBLEM', '02a'], ['THE FRUSTRATION', '02b'], ['THE BELIEF', '02c'],
+  ['EMPATHY', '03a'], ['AUTHORITY', '03b'], ['THE PROCESS', '04'],
+  ['CALL TO ACTION', '05a'], ['SECONDARY CTA', '05b'],
   ['THE COST OF INACTION', '06'], ['THE TRANSFORMATION', '07'],
 ];
 
@@ -62,7 +63,7 @@ export function renderSignalMapEmail({ product, oneLiner, answers }) {
 
   // THE BRAND first, then the chosen one-liner, then the remaining map rows.
   const rows = [
-    answers['00'] ? row('The Brand', answers['00']) : '',
+    answers['00'] ? row('The Business', answers['00']) : '',
     oneLiner ? row('Your One-Liner', oneLiner) : '',
     ...MAP_ROWS.filter(([, key]) => key !== '00' && answers[key]).map(([label, key]) => row(label, answers[key])),
   ].join('');
@@ -150,7 +151,7 @@ export function renderSaveProgressEmail({ resumeUrl, lockedCount }) {
         <tr><td style="padding:40px;">
           <div style="font-family:Arial,sans-serif;font-size:13px;letter-spacing:3px;color:${BRAND.highlight};text-transform:uppercase;">The Edge by Galvanite</div>
           <h1 style="font-family:Georgia,serif;font-size:28px;font-weight:normal;color:${BRAND.white};margin:16px 0 12px;">Pick up where you left off</h1>
-          <p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:${BRAND.chalk};margin:0 0 28px;">You're ${lockedCount} of 10 steps in. Your progress is saved.</p>
+          <p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:${BRAND.chalk};margin:0 0 28px;">You're ${lockedCount} steps in. Your progress is saved.</p>
           <a href="${esc(resumeUrl)}" style="display:inline-block;background:${BRAND.yellow};color:${BRAND.navy};font-family:Arial,sans-serif;font-size:15px;font-weight:bold;text-decoration:none;padding:14px 28px;border-radius:6px;">Continue The Edge</a>
         </td></tr>
       </table>

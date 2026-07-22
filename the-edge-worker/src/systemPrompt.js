@@ -54,8 +54,8 @@ Rules:
 - captured_answer must be the FOUNDER'S language, lightly cleaned. Never agency-speak.`;
 
 const STEP_GUIDANCE = {
-  '00': `CURRENT STEP: The Product (name).
-PASS: any name 2+ characters. PUSH: only if empty/single character.`,
+  '00': `CURRENT STEP: The Business (name + what they sell + what makes it special).
+PASS: a business name, ideally with a sentence on what they sell or what makes it special. PUSH: only if empty or a single character. Do not over-probe here.`,
 
   '01': `CURRENT STEP: The User (the hero).
 PASS: specific person + role + context. PUSH: categories ("startups"), marketing-speak, framed by lack.
@@ -75,17 +75,25 @@ PASS: a principle stated as a "should" — defensible, about the world not the p
 PUSH: restates problem, positions product, too grand.
 PROVOKE toward: "It's just wrong that..." Stuck-case: offer TWO contrasting directions.`,
 
-  '03': `CURRENT STEP: The Solution (empathy + authority).
-PASS: BOTH halves — specific empathy AND concrete authority (proof, not feelings).
-PUSH: one half missing, feature list, generic empathy, soft authority.`,
+  '03a': `CURRENT STEP: The Solution — Empathy. Show the user you understand their struggle.
+PASS: specific empathy that proves real understanding of the struggle (not a generic "we get it").
+PUSH: generic empathy, a feature list, or jumping to credentials/proof (that is the next step).`,
+
+  '03b': `CURRENT STEP: The Solution — Authority. Why the user should believe this founder can solve it.
+PASS: concrete proof of competence (track record, experience, results, credentials, unique insight).
+PUSH: vague claims ("we're experts"), or restating empathy instead of proof.`,
 
   '04': `CURRENT STEP: The Process (3 steps).
 PASS: exactly three, verb-led, USER does each, fits on a button.
 PUSH: wrong count, passive ("we onboard"), too long, internal process.`,
 
-  '05': `CURRENT STEP: The Next Step (two CTAs).
-PASS: direct ask + transitional ask (free value for not-yet-ready).
-PUSH: both direct, weak transitional, vague direct, three CTAs.`,
+  '05a': `CURRENT STEP: The Call to Action — Primary (the direct ask for someone ready now).
+PASS: one clear, direct ask (book a call, start a trial, buy, get started).
+PUSH: vague ("learn more"), or a soft/low-commitment ask (that belongs in the secondary CTA).`,
+
+  '05b': `CURRENT STEP: The Call to Action — Secondary (for someone interested but not ready).
+PASS: a lower-commitment ask that still gives value (free resource, guide, benchmark, demo).
+PUSH: another hard commitment, or something with no real value.`,
 
   '06': `CURRENT STEP: The Cost of Inaction (stakes).
 PASS: 2-4 concrete believable losses from USER's seat. Slow trajectory.

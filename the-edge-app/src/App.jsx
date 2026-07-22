@@ -14,7 +14,9 @@ function openingMessageForStep(nextId, brand) {
   if (isIntakeId(nextId)) return getIntakeStep(nextId).probe;
   const step = getStepById(nextId);
   if (nextId === '01') {
-    return `Excellent! Now let's build the brand story of ${brand || 'your brand'}.\n\n${step.openingProbe}`;
+    // Step 00 now captures name + what they sell, so take the first clause as the name.
+    const name = (brand || '').split(/[.\n!?]/)[0].trim() || 'your brand';
+    return `Excellent! Now let's build the brand story of ${name}.\n\n${step.openingProbe}`;
   }
   return step.openingProbe;
 }
