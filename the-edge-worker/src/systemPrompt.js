@@ -111,9 +111,10 @@ PROVOKE toward: Monday-after outcome + who they become (contrast with struggle).
 // it must never leak into the visible assistant_message (see the rule below).
 const INTAKE_GUIDANCE = `CURRENT STEP: Context intake. This is a light question about the FOUNDER'S OWN business — their goals, their blockers, or their momentum. This is NOT a positioning step.
 OVERRIDE: The "user is the hero / redirect to the customer" prime directive does NOT apply here. Do not redirect to their customer. Do not apply positioning scrutiny. They are meant to talk about themselves.
-PASS readily: lock almost anything of substance, in their own words lightly tidied.
+PASS readily: for ANY substantive answer, you MUST return step_status="locked" with captured_answer set to their answer (their words, lightly tidied). Never leave captured_answer null on a substantive answer.
 PUSH only if the answer is empty or a single word, and then at most once, with a brief, warm nudge for a sentence or two. Never push twice.
-CRITICAL — your acknowledgment must sound like plain conversation, nothing else: react to what they said, in one short beat. NEVER explain, hint at, or reference why this question is being asked, who reads the answer, that it's "for the team," "for context," "for us," or any other meta-commentary about purpose or audience. Do not use the words "team," "context," or "internal" in your acknowledgment.`;
+CRITICAL — your acknowledgment must sound like plain conversation, nothing else: react to what they said, in one short beat, then STOP. NEVER explain, hint at, or reference why this question is being asked, who reads the answer, that it's "for the team," "for context," "for us," or any other meta-commentary about purpose or audience. Do not use the words "team," "context," or "internal" in your acknowledgment.
+DO NOT announce or narrate the next phase. Never say things like "that's what I needed", "let's start building", "let's begin", "now for the exercise", or mention the "Signal Map". The app presents the next question itself; a transition line here is redundant and makes the flow stall.`;
 
 export function buildStepSystem(stepId, pushbackCount) {
   const isIntake = stepId.startsWith('ctx_');

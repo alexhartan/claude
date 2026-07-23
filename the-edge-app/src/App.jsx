@@ -112,14 +112,18 @@ export default function App() {
       setIsThinking(false);
       setMessages((prev) => [...prev, { role: 'assistant', content: response.assistant_message }]);
 
-      if (response.step_status === 'locked' && response.captured_answer) {
+      if (response.step_status === 'locked') {
         const lockedId = currentStepId;
+        // Advance on any lock. If the model omits captured_answer (it sometimes
+        // does on the final intake, where it writes a transition instead), fall
+        // back to the founder's own message so the flow never stalls.
+        const captured = response.captured_answer || userMessage.trim();
         if (isIntakeId(lockedId)) {
           // Intake answers go to their own bucket, keyed by field (goal/blocker/tailwind).
           const field = getIntakeStep(lockedId).field;
-          setContextAnswers((prev) => ({ ...prev, [field]: response.captured_answer }));
+          setContextAnswers((prev) => ({ ...prev, [field]: captured }));
         } else {
-          setLockedAnswers((prev) => ({ ...prev, [lockedId]: response.captured_answer }));
+          setLockedAnswers((prev) => ({ ...prev, [lockedId]: captured }));
         }
         setPushbackCount(0);
 
