@@ -1,5 +1,5 @@
 // Mocked LLM responses for offline prototype testing
-import { getNextFlowId, isIntakeId } from './steps.js';
+import { getNextFlowId, isIntakeId, STEPS } from './steps.js';
 import { localOneLiners } from './oneliners.js';
 
 function analyzeAnswer(answer, stepId, pushbackCount) {
@@ -116,7 +116,7 @@ export async function mockChat({ userMessage, currentStepId, pushbackCount }) {
 }
 
 export function getOpeningMessage() {
-  return 'What is the name of your brand?';
+  return STEPS[0].openingProbe;
 }
 
 export async function getOneLiners(answers) {

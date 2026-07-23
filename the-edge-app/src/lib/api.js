@@ -1,6 +1,6 @@
 // Real backend client. Mirrors mockChat contract.
 
-import { getNextFlowId } from './steps.js';
+import { getNextFlowId, STEPS } from './steps.js';
 import { localOneLiners } from './oneliners.js';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8787';
@@ -72,5 +72,5 @@ export async function fetchSession(sessionId) {
 }
 
 export function getOpeningMessage() {
-  return 'What is the name of your brand?';
+  return STEPS[0].openingProbe;
 }
