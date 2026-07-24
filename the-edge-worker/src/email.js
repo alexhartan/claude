@@ -143,6 +143,54 @@ export function renderLeadNotificationEmail({ product, email, oneLiner, answers,
   </body></html>`;
 }
 
+// Team-facing heads-up sent when a founder SAVES progress mid-exercise (before
+// finalizing). A shorter cousin of renderLeadNotificationEmail: same context
+// block and completed-step rows, but compact, flagged as in-progress, no
+// one-liner block (there isn't one yet), plus a resume link and a progress
+// count so the team can see how far they got.
+export function renderSaveNotificationEmail({ product, email, lockedCount, resumeUrl, answers, context }) {
+  const total = MAP_ROWS.length;
+  const done = Math.min(lockedCount || 0, total);
+
+  const rows = MAP_ROWS.filter(([, key]) => answers && answers[key]).map(([label, key]) => `
+    <tr><td style="padding:8px 0;border-bottom:1px solid #eee;">
+      <div style="font-family:Arial,sans-serif;font-size:10px;letter-spacing:1px;color:#888;text-transform:uppercase;margin-bottom:3px;">${esc(label)}</div>
+      <div style="font-family:Arial,sans-serif;font-size:13px;color:#111;line-height:1.45;">${escNl(answers[key])}</div>
+    </td></tr>`).join('');
+
+  const ctx = context || {};
+  const ctxItems = [['Goal', ctx.goal], ['Blocker', ctx.blocker], ['Tailwind', ctx.tailwind]]
+    .filter(([, v]) => v)
+    .map(([label, v]) => `
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;letter-spacing:1px;color:#a67c00;text-transform:uppercase;margin-bottom:3px;font-weight:bold;">${esc(label)}</div>
+        <div style="font-size:13px;color:#111;line-height:1.45;">${esc(v)}</div>
+      </div>`).join('');
+  const ctxBlock = ctxItems
+    ? `<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:14px 18px;margin-bottom:16px;">${ctxItems}</div>`
+    : '';
+
+  const resumeLine = resumeUrl
+    ? `<p style="font-size:13px;color:#444;margin:0 0 16px;"><a href="${esc(resumeUrl)}" style="color:#1d4873;">Open their in-progress exercise</a></p>`
+    : '';
+
+  return `<!DOCTYPE html><html><body style="margin:0;padding:24px;background:#f4f4f4;font-family:Arial,sans-serif;">
+    <table width="640" cellpadding="0" cellspacing="0" style="max-width:640px;margin:0 auto;background:#fff;border-radius:8px;">
+      <tr><td style="padding:28px 32px;">
+        <div style="font-size:12px;letter-spacing:2px;color:#999;text-transform:uppercase;">Edge save &middot; in progress</div>
+        <h1 style="font-size:22px;color:#111;margin:8px 0 4px;">${esc(product || 'Untitled')}</h1>
+        <p style="font-size:14px;color:#444;margin:0 0 6px;">
+          From <a href="mailto:${esc(email)}" style="color:#1d4873;">${esc(email)}</a>
+        </p>
+        <div style="display:inline-block;background:#eef4fb;border:1px solid #cfe0f5;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:bold;color:#1d4873;margin:0 0 16px;">${done} of ${total} steps completed</div>
+        ${resumeLine}
+        ${ctxBlock}
+        <table width="100%" cellpadding="0" cellspacing="0">${rows}</table>
+      </td></tr>
+    </table>
+  </body></html>`;
+}
+
 export function renderSaveProgressEmail({ resumeUrl, lockedCount }) {
   return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:${BRAND.navyDeep};">
     <table width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.navyDeep};padding:40px 0;">

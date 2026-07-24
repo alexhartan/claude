@@ -1,7 +1,7 @@
 // The Edge — Cloudflare Worker
 
 import { SYSTEM_BASE, buildStepSystem } from './systemPrompt.js';
-import { renderSignalMapEmail, renderSaveProgressEmail, renderLeadNotificationEmail } from './email.js';
+import { renderSignalMapEmail, renderSaveProgressEmail, renderLeadNotificationEmail, renderSaveNotificationEmail } from './email.js';
 
 const MODEL = 'claude-opus-4-8';
 
@@ -277,16 +277,33 @@ async function handleSave(request, env) {
   // Capture the warm lead now — someone who gives their email mid-exercise but
   // never finishes would otherwise be invisible (no completion notification).
   const ctx = state?.contextAnswers || {};
+  const answers = state?.lockedAnswers || {};
+  const product = shortName(answers['00']);
   await recordLead(env, {
     type: 'save',
     savedAt: new Date().toISOString(),
     email,
-    product: state?.lockedAnswers?.['00'] || '',
+    product: answers['00'] || '',
     lockedCount,
     resumeUrl,
-    answers: state?.lockedAnswers || {},
+    answers,
     goal: ctx.goal || '', blocker: ctx.blocker || '', tailwind: ctx.tailwind || '',
   });
+
+  // Notify the team that a founder saved partway through, so a warm lead can be
+  // followed up before they finish (or in case they never do). Best-effort: a
+  // failed notification must not break the founder's save.
+  if (env.NOTIFY_EMAIL) {
+    try {
+      await sendEmail(env, {
+        to: env.NOTIFY_EMAIL,
+        subject: `Edge save in progress: ${product || 'Untitled'} (${email})`,
+        html: renderSaveNotificationEmail({ product, email, lockedCount, resumeUrl, answers, context: ctx }),
+      });
+    } catch (err) {
+      console.error('Save notification failed:', String(err));
+    }
+  }
 
   return json({ ok: true, sessionId }, env);
 }
