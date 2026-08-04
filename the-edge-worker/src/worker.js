@@ -129,25 +129,54 @@ async function handleChat(request, env) {
 
   const data = await res.json();
   const raw = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('').trim();
+  const parsed = parseChatReply(raw);
 
-  let parsed;
-  try {
-    const clean = raw.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
-    parsed = JSON.parse(clean);
-  } catch (e) {
-    parsed = {
-      assistant_message: raw || 'Could you say a bit more about that?',
-      step_status: 'in_progress',
-      captured_answer: null,
-    };
+  // Enforce the two-valid-message-types contract in code, not just in the
+  // prompt. An in_progress reply with no question strands the founder: there
+  // is nothing to answer and nothing advances. The prompt's own decision rule
+  // for that case is "if it's good enough, lock it", so coerce to a lock. The
+  // validate-only text reads naturally as a lock acknowledgment, and with
+  // captured_answer null the client falls back to the founder's own message.
+  let step_status = parsed.step_status === 'locked' ? 'locked' : 'in_progress';
+  if (step_status === 'in_progress' && !String(parsed.assistant_message).includes('?')) {
+    step_status = 'locked';
   }
 
   return json({
     assistant_message: parsed.assistant_message,
-    step_status: parsed.step_status === 'locked' ? 'locked' : 'in_progress',
+    step_status,
     captured_answer: parsed.captured_answer ?? null,
-    pushback_count: parsed.step_status === 'locked' ? pushbackCount : pushbackCount + 1,
+    pushback_count: step_status === 'locked' ? pushbackCount : pushbackCount + 1,
   }, env);
+}
+
+// Parse the model's chat reply defensively. The happy path is a bare JSON
+// object, but the model occasionally wraps it in fences or prose, writes a
+// literal newline inside a string value (invalid JSON that still LOOKS
+// complete), or gets truncated by max_tokens. A failed parse used to dump the
+// raw JSON straight into the founder's chat. Try progressively: as-is, the
+// outermost {...} slice, then each with newlines collapsed (rescues in-string
+// newlines; harmless elsewhere). If nothing parses, only surface the raw text
+// when it does NOT look like leaked JSON — otherwise re-ask generically.
+// Exported for tests; the Worker runtime only uses it via handleChat.
+export function parseChatReply(raw) {
+  const clean = raw.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+  const candidates = [clean];
+  const start = clean.indexOf('{');
+  const end = clean.lastIndexOf('}');
+  if (start !== -1 && end > start) candidates.push(clean.slice(start, end + 1));
+  for (const c of [...candidates, ...candidates.map((c) => c.replace(/[\r\n]+/g, ' '))]) {
+    try {
+      const p = JSON.parse(c);
+      if (p && typeof p === 'object' && typeof p.assistant_message === 'string' && p.assistant_message.trim()) return p;
+    } catch {}
+  }
+  const looksLikeJson = clean.startsWith('{') || clean.includes('"assistant_message"');
+  return {
+    assistant_message: !clean || looksLikeJson ? 'Could you say a bit more about that?' : clean,
+    step_status: 'in_progress',
+    captured_answer: null,
+  };
 }
 
 // Fixed presentation order for the three one-liner drafts. Labels and use-cases
